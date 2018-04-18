@@ -14,6 +14,9 @@ gdb: docker-build-debug
 shellcheck: docker-build-check
 	docker run --rm -v `pwd`/..:/gnuk/ -t gnuk:latest-check shellcheck /gnuk/src/configure
 
+vidpid: all
+	docker run --user=`id -u` --env GNUK_CONFIG --rm -v `pwd`/..:/gnuk/ -w /gnuk/src -t gnuk:latest make build/gnuk-vidpid.elf
+
 CHECKERS=security optin nullability core deadcode alpha.core alpha.security
 scan-build: clean docker-build-check
 	docker run --user=`id -u` --rm -v `pwd`/..:/gnuk/ -w /gnuk/src -t gnuk:latest-check scan-build -o scan-build \
@@ -32,5 +35,5 @@ docker-build-debug: docker-build-release
 docker-build-check: docker-build-release
 	docker build -t gnuk:latest-check -f `pwd`/Dockerfile.check ..
 
-.PHONY: all clean gdb shellcheck scan-build \
+.PHONY: all clean gdb shellcheck vidpid scan-build \
 	docker-build-release docker-build-debug docker-build-check
