@@ -1,6 +1,21 @@
 Gnuk NEWS - User visible changes
 
 
+* Major changes in Gnuk 1.2.20
+
+  Released 2022-04-22, by NIIBE Yutaka
+
+** Minor fixes for newer compiler
+
+For build with newer compiler, Gnuk and regnual are fixed for address
+calculation and access to object on memory, as well as declarations of
+function and type in standard C library.
+
+** Upgrade of Chopstx
+
+We use Chopstx 1.21.  This includes fix to silence compiler warnings.
+
+
 * Major changes in Gnuk 1.2.19
 
   Released 2021-10-12, by NIIBE Yutaka

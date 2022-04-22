@@ -1,5 +1,8 @@
 2022-04-22  NIIBE Yutaka  <gniibe@fsij.org>
 
+	* VERSION: 1.2.20.
+	* chopstx: Update to 1.21.
+
 	* src/gnuk.h (_regnual_start): Fix type.
 	* src/main.c (main): Fix address for _regnual_start.
 	* src/usb_ctrl.c (mem_info, usb_setup): Follow the change.

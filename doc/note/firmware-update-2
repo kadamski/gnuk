@@ -122,7 +122,7 @@ your environment for Gnuk Token.
 How to run the script: ::
 
   $ cd tool
-  $ ./upgrade_by_passwd.py ../regnual/regnual.bin ../src/build/gnuk.bin
+  $ ./upgrade_by_passwd.py
 
 Then, the script on your host PC invoke the steps described above, and
 you will get new version of Gnuk installed.
