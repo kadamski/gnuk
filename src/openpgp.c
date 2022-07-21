@@ -136,8 +136,6 @@ cmd_verify (struct eventflag *ccid_comm)
   const uint8_t *pw;
 
   (void)ccid_comm;
-  DEBUG_INFO (" - VERIFY\r\n");
-  DEBUG_BYTE (p2);
 
   len = apdu.cmd_apdu_data_len;
   pw = apdu.cmd_apdu_data;
@@ -193,17 +191,14 @@ cmd_verify (struct eventflag *ccid_comm)
 
   if (r < 0)
     {
-      DEBUG_INFO ("failed\r\n");
       GPG_SECURITY_FAILURE ();
     }
   else if (r == 0)
     {
-      DEBUG_INFO ("blocked\r\n");
       GPG_SECURITY_AUTH_BLOCKED ();
     }
   else
     {
-      DEBUG_INFO ("good\r\n");
       GPG_SUCCESS ();
     }
 }
@@ -279,8 +274,6 @@ cmd_change_password (struct eventflag *ccid_comm)
   const uint8_t *ks_pw3;
 
   (void)ccid_comm;
-  DEBUG_INFO ("Change PW\r\n");
-  DEBUG_BYTE (who);
 
   len = apdu.cmd_apdu_data_len;
   pw = apdu.cmd_apdu_data;
@@ -317,13 +310,11 @@ cmd_change_password (struct eventflag *ccid_comm)
 
       if (pw_len < 0)
 	{
-	  DEBUG_INFO ("permission denied.\r\n");
 	  GPG_SECURITY_FAILURE ();
 	  return;
 	}
       else if (pw_len == 0)
 	{
-	  DEBUG_INFO ("blocked.\r\n");
 	  GPG_SECURITY_AUTH_BLOCKED ();
 	  return;
 	}
@@ -337,7 +328,6 @@ cmd_change_password (struct eventflag *ccid_comm)
 	  if ((ks_pw3 == NULL && newpw_len < ADMIN_PASSWD_MINLEN)
 	      || newpw_len < USER_PASSWD_MINLEN)
 	    {
-	      DEBUG_INFO ("new password length is too short.");
 	      GPG_CONDITION_NOT_SATISFIED ();
 	      return;
 	    }
@@ -377,13 +367,11 @@ cmd_change_password (struct eventflag *ccid_comm)
 
       if (pw_len < 0)
 	{
-	  DEBUG_INFO ("permission denied.\r\n");
 	  GPG_SECURITY_FAILURE ();
 	  return;
 	}
       else if (pw_len == 0)
 	{
-	  DEBUG_INFO ("blocked.\r\n");
 	  GPG_SECURITY_AUTH_BLOCKED ();
 	  return;
 	}
@@ -403,7 +391,6 @@ cmd_change_password (struct eventflag *ccid_comm)
 	    }
 	  else if (newpw_len < ADMIN_PASSWD_MINLEN)
 	    {
-	      DEBUG_INFO ("new password length is too short.");
 	      GPG_CONDITION_NOT_SATISFIED ();
 	      return;
 	    }
@@ -421,17 +408,14 @@ cmd_change_password (struct eventflag *ccid_comm)
   r = gpg_change_keystring (who_old, old_ks, who, new_ks);
   if (r <= -2)
     {
-      DEBUG_INFO ("memory error.\r\n");
       GPG_MEMORY_FAILURE ();
     }
   else if (r < 0)
     {
-      DEBUG_INFO ("security error.\r\n");
       GPG_SECURITY_FAILURE ();
     }
   else if (r == 0 && who == BY_USER)	/* no prvkey */
     {
-      DEBUG_INFO ("user pass change not supported with no keys.\r\n");
       GPG_CONDITION_NOT_SATISFIED ();
     }
   else if (r > 0 && who == BY_USER)
@@ -456,7 +440,6 @@ cmd_change_password (struct eventflag *ccid_comm)
       gpg_do_write_simple (NR_DO_KEYSTRING_PW1, new_ks0, KS_META_SIZE);
       ac_reset_pso_cds ();
       ac_reset_other ();
-      DEBUG_INFO ("Changed length of DO_KEYSTRING_PW1.\r\n");
       GPG_SUCCESS ();
     }
   else if (r > 0 && who == BY_ADMIN)
@@ -467,7 +450,6 @@ cmd_change_password (struct eventflag *ccid_comm)
 	gpg_do_write_simple (NR_DO_KEYSTRING_PW3, new_ks0, KS_META_SIZE);
 
       ac_reset_admin ();
-      DEBUG_INFO ("Changed length of DO_KEYSTRING_PW3.\r\n");
       GPG_SUCCESS ();
     }
   else /* r == 0 && who == BY_ADMIN */	/* no prvkey */
@@ -479,7 +461,6 @@ cmd_change_password (struct eventflag *ccid_comm)
 	  new_ks0[0] |= PW_LEN_KEYSTRING_BIT;
 	  gpg_do_write_simple (NR_DO_KEYSTRING_PW3, new_ks0, KEYSTRING_SIZE);
 	}
-      DEBUG_INFO ("Changed DO_KEYSTRING_PW3.\r\n");
       ac_reset_admin ();
       GPG_SUCCESS ();
     }
@@ -547,8 +528,6 @@ cmd_reset_user_password (struct eventflag *ccid_comm)
   int salt_len;
 
   (void)ccid_comm;
-  DEBUG_INFO ("Reset PW1\r\n");
-  DEBUG_BYTE (p1);
 
   len = apdu.cmd_apdu_data_len;
   pw = apdu.cmd_apdu_data;
@@ -566,14 +545,12 @@ cmd_reset_user_password (struct eventflag *ccid_comm)
 
       if (gpg_pw_locked (PW_ERR_RC))
 	{
-	  DEBUG_INFO ("blocked.\r\n");
 	  GPG_SECURITY_AUTH_BLOCKED ();
 	  return;
 	}
 
       if (ks_rc == NULL)
 	{
-	  DEBUG_INFO ("security error.\r\n");
 	  GPG_SECURITY_FAILURE ();
 	  return;
 	}
@@ -588,7 +565,6 @@ cmd_reset_user_password (struct eventflag *ccid_comm)
       if ((ks_pw3 == NULL && newpw_len < ADMIN_PASSWD_MINLEN)
 	  || newpw_len < USER_PASSWD_MINLEN)
 	{
-	  DEBUG_INFO ("new password length is too short.");
 	  GPG_CONDITION_NOT_SATISFIED ();
 	  return;
 	}
@@ -600,23 +576,19 @@ cmd_reset_user_password (struct eventflag *ccid_comm)
       r = gpg_change_keystring (BY_RESETCODE, old_ks, BY_USER, new_ks);
       if (r <= -2)
 	{
-	  DEBUG_INFO ("memory error.\r\n");
 	  GPG_MEMORY_FAILURE ();
 	}
       else if (r < 0)
 	{
-	  DEBUG_INFO ("failed.\r\n");
 	  gpg_pw_increment_err_counter (PW_ERR_RC);
 	  GPG_SECURITY_FAILURE ();
 	}
       else if (r == 0)
 	{
-	  DEBUG_INFO ("user pass change not supported with no keys.\r\n");
 	  GPG_CONDITION_NOT_SATISFIED ();
 	}
       else
 	{
-	  DEBUG_INFO ("done.\r\n");
 	  gpg_do_write_simple (NR_DO_KEYSTRING_PW1, new_ks0, KS_META_SIZE);
 	  ac_reset_pso_cds ();
 	  ac_reset_other ();
@@ -633,7 +605,6 @@ cmd_reset_user_password (struct eventflag *ccid_comm)
 
       if (!ac_check_status (AC_ADMIN_AUTHORIZED))
 	{
-	  DEBUG_INFO ("permission denied.\r\n");
 	  GPG_SECURITY_FAILURE ();
 	  return;
 	}
@@ -651,7 +622,6 @@ cmd_reset_user_password (struct eventflag *ccid_comm)
       if ((ks_pw3 == NULL && newpw_len < ADMIN_PASSWD_MINLEN)
 	  || newpw_len < USER_PASSWD_MINLEN)
 	{
-	  DEBUG_INFO ("new password length is too short.");
 	  GPG_CONDITION_NOT_SATISFIED ();
 	  return;
 	}
@@ -662,22 +632,18 @@ cmd_reset_user_password (struct eventflag *ccid_comm)
       r = gpg_change_keystring (admin_authorized, old_ks, BY_USER, new_ks);
       if (r <= -2)
 	{
-	  DEBUG_INFO ("memory error.\r\n");
 	  GPG_MEMORY_FAILURE ();
 	}
       else if (r < 0)
 	{
-	  DEBUG_INFO ("security error.\r\n");
 	  GPG_SECURITY_FAILURE ();
 	}
       else if (r == 0)
 	{
-	  DEBUG_INFO ("user pass change not supported with no keys.\r\n");
 	  GPG_CONDITION_NOT_SATISFIED ();
 	}
       else
 	{
-	  DEBUG_INFO ("done.\r\n");
 	  gpg_do_write_simple (NR_DO_KEYSTRING_PW1, new_ks0, KS_META_SIZE);
 	  ac_reset_pso_cds ();
 	  ac_reset_other ();
@@ -697,7 +663,6 @@ cmd_put_data (struct eventflag *ccid_comm)
   int len;
 
   (void)ccid_comm;
-  DEBUG_INFO (" - PUT DATA\r\n");
 
   tag = ((P1 (apdu)<<8) | P2 (apdu));
   len = apdu.cmd_apdu_data_len;
@@ -709,8 +674,6 @@ static void
 cmd_pgp_gakp (struct eventflag *ccid_comm)
 {
   (void)ccid_comm;
-  DEBUG_INFO (" - Generate Asymmetric Key Pair\r\n");
-  DEBUG_BYTE (P1 (apdu));
 
   if (P1 (apdu) == 0x81)
     /* Get public key */
@@ -742,7 +705,6 @@ cmd_read_binary (struct eventflag *ccid_comm)
   uint16_t offset;
 
   (void)ccid_comm;
-  DEBUG_INFO (" - Read binary\r\n");
 
   if (is_short_EF)
     file_id = (P1 (apdu) & 0x1f);
@@ -801,15 +763,10 @@ cmd_select_file (struct eventflag *ccid_comm)
   (void)ccid_comm;
   if (P1 (apdu) == 4)	/* Selection by DF name */
     {
-      DEBUG_INFO (" - select DF by name\r\n");
-
       /* name = D2 76 00 01 24 01 */
       if (apdu.cmd_apdu_data_len != 6
 	  || memcmp (openpgpcard_aid, apdu.cmd_apdu_data, 6) != 0)
 	{
-	  DEBUG_SHORT (apdu.cmd_apdu_data_len);
-	  DEBUG_BINARY (apdu.cmd_apdu_data, apdu.cmd_apdu_data_len);
-
 	  GPG_NO_FILE ();
 	  return;
 	}
@@ -828,7 +785,6 @@ cmd_select_file (struct eventflag *ccid_comm)
   else if (apdu.cmd_apdu_data_len == 2
 	   && apdu.cmd_apdu_data[0] == 0x2f && apdu.cmd_apdu_data[1] == 0x02)
     {
-      DEBUG_INFO (" - select 0x2f02 EF\r\n");
       /*
        * MF.EF-GDO -- Serial number of the card and name of the owner
        */
@@ -838,7 +794,6 @@ cmd_select_file (struct eventflag *ccid_comm)
   else if (apdu.cmd_apdu_data_len == 2
 	   && apdu.cmd_apdu_data[0] == 0x3f && apdu.cmd_apdu_data[1] == 0x00)
     {
-      DEBUG_INFO (" - select ROOT MF\r\n");
       if (P2 (apdu) == 0x0c)
 	{
 	  GPG_SUCCESS ();
@@ -859,8 +814,6 @@ cmd_select_file (struct eventflag *ccid_comm)
     }
   else
     {
-      DEBUG_INFO (" - select ?? \r\n");
-
       file_selection = FILE_NONE;
       GPG_NO_FILE ();
     }
@@ -872,7 +825,6 @@ cmd_get_data (struct eventflag *ccid_comm)
   uint16_t tag = ((P1 (apdu)<<8) | P2 (apdu));
 
   (void)ccid_comm;
-  DEBUG_INFO (" - Get Data\r\n");
 
   gpg_do_get_data (tag, 0);
 }
@@ -895,17 +847,11 @@ cmd_pso (struct eventflag *ccid_comm)
   unsigned int result_len = 0;
   int cs;
 
-  DEBUG_INFO (" - PSO: ");
-  DEBUG_WORD ((uint32_t)&r);
-  DEBUG_BINARY (apdu.cmd_apdu_data, apdu.cmd_apdu_data_len);
-  DEBUG_SHORT (len);
-
   if (P1 (apdu) == 0x9e && P2 (apdu) == 0x9a)
     {
       attr = gpg_get_algo_attr (GPG_KEY_FOR_SIGNING);
       if (!ac_check_status (AC_PSO_CDS_AUTHORIZED))
 	{
-	  DEBUG_INFO ("security error.");
 	  GPG_SECURITY_FAILURE ();
 	  return;
 	}
@@ -920,7 +866,6 @@ cmd_pso (struct eventflag *ccid_comm)
 	  /* ECDSA with p256r1/p256k1 for signature */
 	  if (len != ECDSA_HASH_LEN)
 	    {
-	      DEBUG_INFO (" wrong length");
 	      GPG_CONDITION_NOT_SATISFIED ();
 	      return;
 	    }
@@ -956,7 +901,6 @@ cmd_pso (struct eventflag *ccid_comm)
 	}
       else
 	{
-	  DEBUG_INFO ("unknown algo.");
 	  GPG_FUNCTION_NOT_SUPPORTED ();
 	  return;
 	}
@@ -974,7 +918,6 @@ cmd_pso (struct eventflag *ccid_comm)
       attr = gpg_get_algo_attr (GPG_KEY_FOR_DECRYPTION);
       if (!ac_check_status (AC_OTHER_AUTHORIZED))
 	{
-	  DEBUG_INFO ("security error.");
 	  GPG_SECURITY_FAILURE ();
 	  return;
 	}
@@ -1038,7 +981,6 @@ cmd_pso (struct eventflag *ccid_comm)
 	}
       else
 	{
-	  DEBUG_INFO ("unknown algo.");
 	  GPG_FUNCTION_NOT_SUPPORTED ();
 	  return;
 	}
@@ -1049,14 +991,8 @@ cmd_pso (struct eventflag *ccid_comm)
 
   if (r < 0)
     {
-      DEBUG_INFO (" - ??");
-      DEBUG_BYTE (P1 (apdu));
-      DEBUG_INFO (" - ??");
-      DEBUG_BYTE (P2 (apdu));
       GPG_ERROR ();
     }
-
-  DEBUG_INFO ("PSO done.\r\n");
 }
 
 
@@ -1069,22 +1005,14 @@ cmd_internal_authenticate (struct eventflag *ccid_comm)
   unsigned int result_len = 0;
   int cs;
 
-  DEBUG_INFO (" - INTERNAL AUTHENTICATE\r\n");
-
   if (P1 (apdu) != 0x00 || P2 (apdu) != 0x00)
     {
-      DEBUG_INFO (" - ??");
-      DEBUG_BYTE (P1 (apdu));
-      DEBUG_INFO (" - ??");
-      DEBUG_BYTE (P2 (apdu));
       GPG_CONDITION_NOT_SATISFIED ();
       return;
     }
 
-  DEBUG_SHORT (len);
   if (!ac_check_status (AC_OTHER_AUTHORIZED))
     {
-      DEBUG_INFO ("security error.");
       GPG_SECURITY_FAILURE ();
       return;
     }
@@ -1100,7 +1028,6 @@ cmd_internal_authenticate (struct eventflag *ccid_comm)
     {
       if (len != ECDSA_HASH_LEN)
 	{
-	  DEBUG_INFO ("wrong hash length.");
 	  GPG_CONDITION_NOT_SATISFIED ();
 	  return;
 	}
@@ -1139,8 +1066,6 @@ cmd_internal_authenticate (struct eventflag *ccid_comm)
     res_APDU_size = result_len;
   else
     GPG_ERROR ();
-
-  DEBUG_INFO ("INTERNAL AUTHENTICATE done.\r\n");
 }
 
 
@@ -1157,7 +1082,6 @@ modify_binary (uint8_t op, uint8_t p1, uint8_t p2, int len)
 
   if (!ac_check_status (AC_ADMIN_AUTHORIZED))
     {
-      DEBUG_INFO ("security error.");
       GPG_SECURITY_FAILURE ();
       return;
     }
@@ -1195,7 +1119,6 @@ modify_binary (uint8_t op, uint8_t p1, uint8_t p2, int len)
 	  r = flash_erase_binary (file_id);
 	  if (r < 0)
 	    {
-	      DEBUG_INFO ("memory error.\r\n");
 	      GPG_MEMORY_FAILURE ();
 	      return;
 	    }
@@ -1204,9 +1127,6 @@ modify_binary (uint8_t op, uint8_t p1, uint8_t p2, int len)
   else
     offset = (p1 << 8) | p2;
 
-  DEBUG_SHORT (len);
-  DEBUG_SHORT (offset);
-
   if (file_id == FILEID_CH_CERTIFICATE && (len&1))
     /* It's OK the size of last write is odd.  */
     apdu.cmd_apdu_data[len++] = 0xff;
@@ -1214,7 +1134,6 @@ modify_binary (uint8_t op, uint8_t p1, uint8_t p2, int len)
   r = flash_write_binary (file_id, apdu.cmd_apdu_data, len, offset);
   if (r < 0)
     {
-      DEBUG_INFO ("memory error.\r\n");
       GPG_MEMORY_FAILURE ();
       return;
     }
@@ -1230,9 +1149,7 @@ cmd_update_binary (struct eventflag *ccid_comm)
   int len = apdu.cmd_apdu_data_len;
 
   (void)ccid_comm;
-  DEBUG_INFO (" - UPDATE BINARY\r\n");
   modify_binary (MBD_OPRATION_UPDATE, P1 (apdu), P2 (apdu), len);
-  DEBUG_INFO ("UPDATE BINARY done.\r\n");
 }
 #endif
 
@@ -1243,9 +1160,7 @@ cmd_write_binary (struct eventflag *ccid_comm)
   int len = apdu.cmd_apdu_data_len;
 
   (void)ccid_comm;
-  DEBUG_INFO (" - WRITE BINARY\r\n");
   modify_binary (MBD_OPRATION_WRITE, P1 (apdu), P2 (apdu), len);
-  DEBUG_INFO ("WRITE BINARY done.\r\n");
 }
 
 
@@ -1254,7 +1169,6 @@ static void
 cmd_external_authenticate (struct eventflag *ccid_comm)
 {
   (void)ccid_comm;
-  DEBUG_INFO (" - EXTERNAL AUTHENTICATE\r\n");
 
   if (!ac_check_status (AC_ADMIN_AUTHORIZED))
     {
@@ -1264,7 +1178,6 @@ cmd_external_authenticate (struct eventflag *ccid_comm)
 
   eventflag_signal (openpgp_comm, EV_EXIT); /* signal to self.  */
   set_res_sw (0xff, 0xff);
-  DEBUG_INFO ("EXTERNAL AUTHENTICATE done.\r\n");
 }
 #endif
 
@@ -1275,7 +1188,6 @@ cmd_get_challenge (struct eventflag *ccid_comm)
   const uint8_t *challenge;
 
   (void)ccid_comm;
-  DEBUG_INFO (" - GET CHALLENGE\r\n");
 
   if (len > CHALLENGE_LEN)
     {
@@ -1298,7 +1210,6 @@ cmd_get_challenge (struct eventflag *ccid_comm)
   random_bytes_free (challenge);
   res_APDU_size = len;
   GPG_SUCCESS ();
-  DEBUG_INFO ("GET CHALLENGE done.\r\n");
 }
 
 
@@ -1433,8 +1344,6 @@ process_command_apdu (struct eventflag *ccid_comm)
     }
   else
     {
-      DEBUG_INFO (" - ??");
-      DEBUG_BYTE (cmd);
       GPG_NO_INS ();
     }
 }
@@ -1451,8 +1360,6 @@ openpgp_card_thread (void *arg)
   while (1)
     {
       eventmask_t m = eventflag_wait (openpgp_comm);
-
-      DEBUG_INFO ("GPG!: ");
 
       if (m == EV_VERIFY_CMD_AVAILABLE)
 	{

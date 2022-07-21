@@ -1,7 +1,8 @@
 /*
  * ac.c -- Check access condition
  *
- * Copyright (C) 2010, 2012, 2013, 2017 Free Software Initiative of Japan
+ * Copyright (C) 2010, 2012, 2013, 2017, 2022
+ *               Free Software Initiative of Japan
  * Author: NIIBE Yutaka <gniibe@fsij.org>
  *
  * This file is a part of Gnuk, a GnuPG USB Token implementation.
@@ -143,9 +144,6 @@ verify_pso_cds (const uint8_t *pw, int pw_len)
   const uint8_t *ks_pw1 = gpg_do_read_simple (NR_DO_KEYSTRING_PW1);
   int r;
 
-  DEBUG_INFO ("verify_pso_cds\r\n");
-  DEBUG_BYTE (pw_len);
-
   r = verify_user_0 (AC_PSO_CDS_AUTHORIZED, pw, pw_len, pw_len, ks_pw1, 0);
   if (r > 0)
     auth_status |= AC_PSO_CDS_AUTHORIZED;
@@ -157,9 +155,6 @@ verify_other (const uint8_t *pw, int pw_len)
 {
   const uint8_t *ks_pw1 = gpg_do_read_simple (NR_DO_KEYSTRING_PW1);
   int r;
-
-  DEBUG_INFO ("verify_other\r\n");
-  DEBUG_BYTE (pw_len);
 
   r = verify_user_0 (AC_OTHER_AUTHORIZED, pw, pw_len, pw_len, ks_pw1, 0);
   if (r > 0)

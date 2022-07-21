@@ -39,7 +39,6 @@ help=no
 vidpid=none
 target=FST_01
 with_dfu=default
-debug=no
 sys1_compat=yes
 certdo=no
 factory_reset=no
@@ -78,10 +77,6 @@ for option; do
     vidpid=$optarg ;;
   --target=*)
     target=$optarg ;;
-  --enable-debug)
-    debug=yes ;;
-  --disable-debug)
-    debug=no ;;
   --enable-certdo)
     certdo=yes ;;
   --disable-certdo)
@@ -143,7 +138,6 @@ Configuration:
 			   FST_01_00 (unreleased version with 8MHz XTAL)
   --enable-factory-reset
 			support life cycle management	[no]
-  --enable-debug	debug with virtual COM port	[no]
   --enable-certdo	support CERT.3 data object	[no]
   --enable-sys1-compat	enable SYS 1.0 compatibility	[yes]
 			   executable is target dependent
@@ -240,17 +234,6 @@ else
   fi
 fi
 
-# --enable-debug option
-if test "$debug" = "yes"; then
-  DEBUG_MAKE_OPTION="ENABLE_DEBUG=1"
-  DEBUG_DEFINE="#define DEBUG 1"
-  echo "Debug option enabled"
-else
-  DEBUG_MAKE_OPTION="# ENABLE_DEBUG=1"
-  DEBUG_DEFINE="#undef DEBUG"
-  echo "Debug option disabled"
-fi
-
 ORIGIN_REAL=0x08000000
 ORIGIN_REAL_DEFINE="#define ORIGIN_REAL $ORIGIN_REAL"
 # --with-dfu option
@@ -321,7 +304,7 @@ SERIALNO_STR_LEN_DEFINE="#define SERIALNO_STR_LEN ${#SERIALNO}"
 
 
 if test "$sys1_compat" = "yes"; then
-  CONFIG="$target:dfu=$with_dfu:debug=$debug:certdo=$certdo:factory_reset=$factory_reset:kdf=$kdf_do"
+  CONFIG="$target:dfu=$with_dfu:certdo=$certdo:factory_reset=$factory_reset:kdf=$kdf_do"
 else
   if test "$with_dfu" = "yes"; then
     echo "Common binary can't support DFU loader, don't use --with-dfu." >&2
@@ -331,7 +314,7 @@ else
   FLASH_PAGE_SIZE=2048
   FLASH_SIZE=128
   MEMORY_SIZE=20
-  CONFIG="common:debug=$debug:certdo=$certdo:factory_reset=$factory_reset:kdf=$kdf_do"
+  CONFIG="common:certdo=$certdo:factory_reset=$factory_reset:kdf=$kdf_do"
 fi
 
 output_vid_pid_version () {
@@ -454,7 +437,6 @@ fi
  echo "DEFS=$use_sys3 $flash_override $def_emulation $def_memory_size $def_mhz";
  echo "LDSCRIPT=$ldscript";
  echo "LIBS=$libs";
- echo "$DEBUG_MAKE_OPTION";
  echo "ENABLE_FRAUCHEKY=$enable_fraucheky";
  echo "ENABLE_OUTPUT_HEX=$enable_hexoutput"
  if test "$ackbtn_support" = "yes"; then
@@ -485,8 +467,7 @@ else
 fi
 sed -e "s/@ORIGIN_REAL@/$ORIGIN_REAL/" -e "s/@MEMORY_SIZE@/$MEMORY_SIZE/" \
 	< stdaln-sys.ld.in > stdaln-sys.ld
-sed -e "s/@DEBUG_DEFINE@/$DEBUG_DEFINE/" \
-    -e "s/@DFU_DEFINE@/$DFU_DEFINE/" \
+sed -e "s/@DFU_DEFINE@/$DFU_DEFINE/" \
     -e "s/@ORIGIN_DEFINE@/$ORIGIN_DEFINE/" \
     -e "s/@ORIGIN_REAL_DEFINE@/$ORIGIN_REAL_DEFINE/" \
     -e "s/@CERTDO_DEFINE@/$CERTDO_DEFINE/" \

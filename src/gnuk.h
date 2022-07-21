@@ -230,33 +230,6 @@ int gpg_change_keystring (int who_old, const uint8_t *old_ks,
 
 extern struct key_data kd[3];
 
-#ifdef DEBUG
-void stdout_init (void);
-#define DEBUG_MORE 1
-/*
- * Debug functions in debug.c
- */
-void put_byte (uint8_t b);
-void put_byte_with_no_nl (uint8_t b);
-void put_short (uint16_t x);
-void put_word (uint32_t x);
-void put_int (uint32_t x);
-void put_string (const char *s);
-void put_binary (const char *s, int len);
-
-#define DEBUG_INFO(msg)	    put_string (msg)
-#define DEBUG_WORD(w)	    put_word (w)
-#define DEBUG_SHORT(h)	    put_short (h)
-#define DEBUG_BYTE(b)       put_byte (b)
-#define DEBUG_BINARY(s,len) put_binary ((const char *)s,len)
-#else
-#define DEBUG_INFO(msg)
-#define DEBUG_WORD(w)
-#define DEBUG_SHORT(h)
-#define DEBUG_BYTE(b)
-#define DEBUG_BINARY(s,len)
-#endif
-
 int ecdsa_sign_p256k1 (const uint8_t *hash, uint8_t *output,
 		       const uint8_t *key_data);
 int ecc_compute_public_p256k1 (const uint8_t *key_data, uint8_t *);

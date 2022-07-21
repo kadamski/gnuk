@@ -10,8 +10,6 @@
 #include "sys.h"
 #include "usb_lld.h"
 #include "usb_conf.h"
-#include "usb-cdc.h"
-
 
 #define USB_CCID_INTERFACE_CLASS 0x0B
 #define USB_CCID_INTERFACE_SUBCLASS 0x00
@@ -41,15 +39,7 @@ uint8_t device_desc[] = {
 
 #define CCID_TOTAL_LENGTH (9+9+54+7+7+7)
 
-#define HID_TOTAL_LENGTH   0
-
-#ifdef ENABLE_VIRTUAL_COM_PORT
-#define VCOM_TOTAL_LENGTH (9+5+5+4+5+7+9+7+7)
-#else
-#define VCOM_TOTAL_LENGTH   0
-#endif
-
-#define W_TOTAL_LENGTH (CCID_TOTAL_LENGTH + VCOM_TOTAL_LENGTH)
+#define W_TOTAL_LENGTH CCID_TOTAL_LENGTH
 
 
 /* Configuation Descriptor */
@@ -131,74 +121,7 @@ static const uint8_t config_desc[] = {
   0x82,				/* bEndpointAddress: (IN2) */
   0x03,				/* bmAttributes: Interrupt */
   0x04, 0x00,			/* wMaxPacketSize: 4 */
-  0xFF,				/* bInterval (255ms) */
-
-#ifdef ENABLE_VIRTUAL_COM_PORT
-  /* Interface Descriptor */
-  9,			      /* bLength: Interface Descriptor size */
-  INTERFACE_DESCRIPTOR,	      /* bDescriptorType: Interface */
-  VCOM_INTERFACE_0,	 /* bInterfaceNumber: Index of Interface */
-  0x00,		  /* bAlternateSetting: Alternate setting */
-  0x01,		  /* bNumEndpoints: One endpoints used */
-  0x02,		  /* bInterfaceClass: Communication Interface Class */
-  0x02,		  /* bInterfaceSubClass: Abstract Control Model */
-  0x01,		  /* bInterfaceProtocol: Common AT commands */
-  0x00,		  /* iInterface: */
-  /*Header Functional Descriptor*/
-  5,			    /* bLength: Endpoint Descriptor size */
-  0x24,			    /* bDescriptorType: CS_INTERFACE */
-  0x00,			    /* bDescriptorSubtype: Header Func Desc */
-  0x10, 0x01,		    /* bcdCDC: spec release number */
-  /*Call Managment Functional Descriptor*/
-  5,	    /* bFunctionLength */
-  0x24,	    /* bDescriptorType: CS_INTERFACE */
-  0x01,	    /* bDescriptorSubtype: Call Management Func Desc */
-  0x03,	    /* bmCapabilities: D0+D1 */
-  VCOM_INTERFACE_1,	    /* bDataInterface */
-  /*ACM Functional Descriptor*/
-  4,	    /* bFunctionLength */
-  0x24,	    /* bDescriptorType: CS_INTERFACE */
-  0x02,	    /* bDescriptorSubtype: Abstract Control Management desc */
-  0x02,	    /* bmCapabilities */
-  /*Union Functional Descriptor*/
-  5,		 /* bFunctionLength */
-  0x24,		 /* bDescriptorType: CS_INTERFACE */
-  0x06,		 /* bDescriptorSubtype: Union func desc */
-  VCOM_INTERFACE_0,	 /* bMasterInterface: Communication class interface */
-  VCOM_INTERFACE_1,	 /* bSlaveInterface0: Data Class Interface */
-  /*Endpoint 4 Descriptor*/
-  7,			       /* bLength: Endpoint Descriptor size */
-  ENDPOINT_DESCRIPTOR,	       /* bDescriptorType: Endpoint */
-  0x84,				   /* bEndpointAddress: (IN4) */
-  0x03,				   /* bmAttributes: Interrupt */
-  VIRTUAL_COM_PORT_INT_SIZE, 0x00, /* wMaxPacketSize: */
-  0xFF,				   /* bInterval: */
-
-  /*Data class interface descriptor*/
-  9,			       /* bLength: Endpoint Descriptor size */
-  INTERFACE_DESCRIPTOR,	       /* bDescriptorType: */
-  VCOM_INTERFACE_1,	 /* bInterfaceNumber: Index of Interface */
-  0x00,			   /* bAlternateSetting: Alternate setting */
-  0x02,			   /* bNumEndpoints: Two endpoints used */
-  0x0A,			   /* bInterfaceClass: CDC */
-  0x00,			   /* bInterfaceSubClass: */
-  0x00,			   /* bInterfaceProtocol: */
-  0x00,			   /* iInterface: */
-  /*Endpoint 5 Descriptor*/
-  7,			       /* bLength: Endpoint Descriptor size */
-  ENDPOINT_DESCRIPTOR,	       /* bDescriptorType: Endpoint */
-  0x05,				    /* bEndpointAddress: (OUT5) */
-  0x02,				    /* bmAttributes: Bulk */
-  VIRTUAL_COM_PORT_DATA_SIZE, 0x00, /* wMaxPacketSize: */
-  0x00,			     /* bInterval: ignore for Bulk transfer */
-  /*Endpoint 3 Descriptor*/
-  7,			       /* bLength: Endpoint Descriptor size */
-  ENDPOINT_DESCRIPTOR,	       /* bDescriptorType: Endpoint */
-  0x83,				    /* bEndpointAddress: (IN3) */
-  0x02,				    /* bmAttributes: Bulk */
-  VIRTUAL_COM_PORT_DATA_SIZE, 0x00, /* wMaxPacketSize: */
-  0x00,				    /* bInterval */
-#endif
+  0xFF				/* bInterval (255ms) */
 };
 
 

@@ -319,17 +319,13 @@ flash_do_write (uint8_t nr, const uint8_t *data, int len)
 {
   const uint8_t *p;
 
-  DEBUG_INFO ("flash DO\r\n");
-
   p = flash_data_pool_allocate (2 + len);
   if (p == NULL)
     {
-      DEBUG_INFO ("flash data pool allocation failure.\r\n");
       return NULL;
     }
 
   flash_do_write_internal (p, nr, data, len);
-  DEBUG_INFO ("flash DO...done\r\n");
   return p + 1;
 }
 
@@ -337,9 +333,6 @@ void
 flash_warning (const char *msg)
 {
   (void)msg;
-  DEBUG_INFO ("FLASH: ");
-  DEBUG_INFO (msg);
-  DEBUG_INFO ("\r\n");
 }
 
 void
@@ -714,7 +707,7 @@ flash_put_data (uint16_t hw)
   p = flash_data_pool_allocate (2);
   if (p == NULL)
     {
-      DEBUG_INFO ("data allocation failure.\r\n");
+      ;
     }
 
   flash_program_halfword ((uintptr_t)p, hw);
@@ -748,7 +741,6 @@ flash_bool_write (uint8_t nr)
   p = flash_data_pool_allocate (2);
   if (p == NULL)
     {
-      DEBUG_INFO ("bool allocation failure.\r\n");
       return NULL;
     }
 
@@ -780,7 +772,6 @@ flash_enum_write (uint8_t nr, uint8_t v)
   p = flash_data_pool_allocate (2);
   if (p == NULL)
     {
-      DEBUG_INFO ("enum allocation failure.\r\n");
       return NULL;
     }
 
@@ -841,7 +832,6 @@ flash_cnt123_increment (uint8_t which, const uint8_t **addr_p)
       p = flash_data_pool_allocate (4);
       if (p == NULL)
 	{
-	  DEBUG_INFO ("cnt123 allocation failure.\r\n");
 	  return;
 	}
       hw = NR_COUNTER_123 | (which << 8);

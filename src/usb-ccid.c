@@ -34,12 +34,6 @@
 #include <contrib/ackbtn.h>
 #endif
 
-#ifdef DEBUG
-#include "usb-cdc.h"
-#include "debug.h"
-struct stdout stdout;
-#endif
-
 #include "gnuk.h"
 #include "usb_lld.h"
 #include "usb_conf.h"
@@ -663,7 +657,6 @@ ccid_prepare_receive (struct ccid *c)
 #else
   usb_lld_rx_enable (c->epo->ep_num);
 #endif
-  DEBUG_INFO ("Rx ready\r\n");
 }
 
 /*
@@ -728,27 +721,11 @@ ccid_rx_ready (uint8_t ep_num, uint16_t len)
 
 extern void EP6_IN_Callback (uint16_t len);
 
-#if defined(DEBUG) && defined(GNU_LINUX_EMULATION)
-static uint8_t endp5_buf[VIRTUAL_COM_PORT_DATA_SIZE];
-#endif
-
 static void
 usb_rx_ready (uint8_t ep_num, uint16_t len)
 {
   if (ep_num == ENDP1)
     ccid_rx_ready (ep_num, len);
-#ifdef DEBUG
-  else if (ep_num == ENDP5)
-    {
-      chopstx_mutex_lock (&stdout.m_dev);
-#ifdef GNU_LINUX_EMULATION
-      usb_lld_rx_enable (ep_num, endp5_buf, VIRTUAL_COM_PORT_DATA_SIZE);
-#else
-      usb_lld_rx_enable (ep_num);
-#endif
-      chopstx_mutex_unlock (&stdout.m_dev);
-    }
-#endif
 }
 
 static void
@@ -760,14 +737,6 @@ usb_tx_done (uint8_t ep_num, uint16_t len)
     {
       /* INTERRUPT Transfer done */
     }
-#ifdef DEBUG
-  else if (ep_num == ENDP3)
-    {
-      chopstx_mutex_lock (&stdout.m_dev);
-      chopstx_cond_signal (&stdout.cond_dev);
-      chopstx_mutex_unlock (&stdout.m_dev);
-    }
-#endif
 }
 
 
@@ -899,7 +868,6 @@ ccid_power_on (struct ccid *c)
 #else
   usb_lld_tx_enable (c->epi->ep_num, CCID_MSG_HEADER_SIZE + size_atr);
 #endif
-  DEBUG_INFO ("ON\r\n");
   c->tx_busy = 1;
   return CCID_STATE_WAIT;
 }
@@ -938,9 +906,6 @@ ccid_send_status (struct ccid *c)
 #endif
 
   led_blink (LED_SHOW_STATUS);
-#ifdef DEBUG_MORE
-  DEBUG_INFO ("St\r\n");
-#endif
   c->tx_busy = 1;
 }
 
@@ -956,7 +921,6 @@ ccid_power_off (struct ccid *c)
 
   c->ccid_state = CCID_STATE_START; /* This status change should be here */
   ccid_send_status (c);
-  DEBUG_INFO ("OFF\r\n");
   c->tx_busy = 1;
   return CCID_STATE_START;
 }
@@ -1075,9 +1039,6 @@ ccid_send_data_block_internal (struct ccid *c, uint8_t status, uint8_t error)
 #else
   usb_lld_tx_enable (c->epi->ep_num, tx_size);
 #endif
-#ifdef DEBUG_MORE
-  DEBUG_INFO ("DATA\r\n");
-#endif
   c->tx_busy = 1;
 }
 
@@ -1126,9 +1087,6 @@ ccid_send_data_block_0x9000 (struct ccid *c)
 			 CCID_MSG_HEADER_SIZE + len);
 #else
   usb_lld_tx_enable (c->epi->ep_num, CCID_MSG_HEADER_SIZE + len);
-#endif
-#ifdef DEBUG_MORE
-  DEBUG_INFO ("DATA\r\n");
 #endif
   c->tx_busy = 1;
 }
@@ -1224,9 +1182,6 @@ ccid_send_data_block_gr (struct ccid *c, size_t chunk_len)
 #else
   usb_lld_tx_enable (c->epi->ep_num, tx_size);
 #endif
-#ifdef DEBUG_MORE
-  DEBUG_INFO ("DATA\r\n");
-#endif
   c->tx_busy = 1;
 }
 
@@ -1273,9 +1228,6 @@ ccid_send_params (struct ccid *c)
 #else
   usb_lld_tx_enable (c->epi->ep_num, CCID_MSG_HEADER_SIZE + sizeof params);
 #endif
-#ifdef DEBUG_MORE
-  DEBUG_INFO ("PARAMS\r\n");
-#endif
   c->tx_busy = 1;
 }
 
@@ -1299,7 +1251,6 @@ ccid_handle_data (struct ccid *c)
 	ccid_send_status (c);
       else
 	{
-	  DEBUG_INFO ("ERR00\r\n");
 	  ccid_error (c, CCID_OFFSET_CMD_NOT_SUPPORTED);
 	}
       break;
@@ -1318,7 +1269,6 @@ ccid_handle_data (struct ccid *c)
 	ccid_send_status (c);
       else
 	{
-	  DEBUG_INFO ("ERR01\r\n");
 	  ccid_error (c, CCID_OFFSET_CMD_NOT_SUPPORTED);
 	}
       break;
@@ -1346,7 +1296,6 @@ ccid_handle_data (struct ccid *c)
 		    {		/* command chaining finished */
 		      c->p += c->a->cmd_apdu_head[4];
 		      c->a->cmd_apdu_head[4] = 0;
-		      DEBUG_INFO ("CMD chaning finished.\r\n");
 		    }
 
 		  if (c->a->cmd_apdu_head[1] == INS_GET_RESPONSE
@@ -1361,7 +1310,6 @@ ccid_handle_data (struct ccid *c)
 		      if (c->len == 0)
 			c->state = APDU_STATE_RESULT;
 		      c->ccid_state = CCID_STATE_WAIT;
-		      DEBUG_INFO ("GET Response.\r\n");
 		    }
 		  else
 		    {		  /* Give this message to GPG thread */
@@ -1387,12 +1335,10 @@ ccid_handle_data (struct ccid *c)
 		  c->p += c->a->cmd_apdu_head[4];
 		  c->len -= c->a->cmd_apdu_head[4];
 		  ccid_send_data_block_0x9000 (c);
-		  DEBUG_INFO ("CMD chaning...\r\n");
 		}
 	    }
 	  else
 	    {		     /* ICC block chaining is not supported. */
-	      DEBUG_INFO ("ERR02\r\n");
 	      ccid_error (c, CCID_OFFSET_PARAM);
 	    }
 	}
@@ -1475,8 +1421,6 @@ ccid_handle_data (struct ccid *c)
 	}
       else
 	{
-	  DEBUG_INFO ("ERR03\r\n");
-	  DEBUG_BYTE (c->ccid_header.msg_type);
 	  ccid_error (c, CCID_OFFSET_CMD_NOT_SUPPORTED);
 	}
       break;
@@ -1489,14 +1433,11 @@ ccid_handle_data (struct ccid *c)
 	ccid_send_status (c);
       else
 	{
-	  DEBUG_INFO ("ERR04\r\n");
-	  DEBUG_BYTE (c->ccid_header.msg_type);
 	  ccid_error (c, CCID_OFFSET_CMD_NOT_SUPPORTED);
 	}
       break;
     default:
       next_state = CCID_STATE_START;
-      DEBUG_INFO ("ERR10\r\n");
       break;
     }
 
@@ -1894,7 +1835,6 @@ ccid_thread (void *arg)
 #endif
 	else
 	  {
-	    DEBUG_INFO ("ERR05\r\n");
 	  }
 #ifdef ACKBTN_SUPPORT
       else if (m == EV_EXEC_ACK_REQUIRED)
@@ -1908,7 +1848,7 @@ ccid_thread (void *arg)
 	  }
 	else
 	  {
-	    DEBUG_INFO ("ERR06\r\n");
+	    ;
 	  }
 #endif
       else if (m == EV_TX_FINISHED)
@@ -1955,63 +1895,3 @@ ccid_thread (void *arg)
 
   return NULL;
 }
-
-
-#ifdef DEBUG
-#include "usb-cdc.h"
-
-void
-stdout_init (void)
-{
-  chopstx_mutex_init (&stdout.m);
-  chopstx_mutex_init (&stdout.m_dev);
-  chopstx_cond_init (&stdout.cond_dev);
-  stdout.connected = 0;
-}
-
-void
-_write (const char *s, int len)
-{
-  int packet_len;
-
-  if (len == 0)
-    return;
-
-  chopstx_mutex_lock (&stdout.m);
-
-  chopstx_mutex_lock (&stdout.m_dev);
-  if (!stdout.connected)
-    chopstx_cond_wait (&stdout.cond_dev, &stdout.m_dev);
-  chopstx_mutex_unlock (&stdout.m_dev);
-
-  do
-    {
-      packet_len =
-	(len < VIRTUAL_COM_PORT_DATA_SIZE) ? len : VIRTUAL_COM_PORT_DATA_SIZE;
-
-      chopstx_mutex_lock (&stdout.m_dev);
-#ifdef GNU_LINUX_EMULATION
-      usb_lld_tx_enable_buf (ENDP3, s, packet_len);
-#else
-      usb_lld_write (ENDP3, s, packet_len);
-#endif
-      chopstx_cond_wait (&stdout.cond_dev, &stdout.m_dev);
-      chopstx_mutex_unlock (&stdout.m_dev);
-
-      s += packet_len;
-      len -= packet_len;
-    }
-  /* Send a Zero-Length-Packet if the last packet is full size.  */
-  while (len != 0 || packet_len == VIRTUAL_COM_PORT_DATA_SIZE);
-
-  chopstx_mutex_unlock (&stdout.m);
-}
-
-#else
-void
-_write (const char *s, int size)
-{
-  (void)s;
-  (void)size;
-}
-#endif

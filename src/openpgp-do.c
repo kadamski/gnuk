@@ -1086,8 +1086,6 @@ proc_resetting_code (const uint8_t *data, int len)
   int r;
   uint8_t *salt = KS_GET_SALT (new_ks0);
 
-  DEBUG_INFO ("Resetting Code!\r\n");
-
   if (len == 0)
     {				/* Removal of resetting code.  */
       enum kind_of_key kk0;
@@ -1109,22 +1107,18 @@ proc_resetting_code (const uint8_t *data, int len)
       r = gpg_change_keystring (admin_authorized, old_ks, BY_RESETCODE, new_ks);
       if (r <= -2)
 	{
-	  DEBUG_INFO ("memory error.\r\n");
 	  return 0;
 	}
       else if (r < 0)
 	{
-	  DEBUG_INFO ("security error.\r\n");
 	  return 0;
 	}
       else if (r == 0)
 	{
-	  DEBUG_INFO ("error (no prvkey).\r\n");
 	  return 0;
 	}
       else
 	{
-	  DEBUG_INFO ("done.\r\n");
 	  gpg_do_write_simple (NR_DO_KEYSTRING_RC, new_ks0, KS_META_SIZE);
 	}
     }
@@ -1218,9 +1212,6 @@ gpg_do_load_prvkey (enum kind_of_key kk, int who, const uint8_t *keystring)
   int pubkey_len;
   const uint8_t *dek_encrypted[3];
 
-  DEBUG_INFO ("Loading private key: ");
-  DEBUG_BYTE (kk);
-
   if (flash_key_addr (kk, &nonce, &tag, &prvkey, &prvkey_len,
 		      &pubkey, &pubkey_len, dek_encrypted) == NULL)
     return 0;
@@ -1237,12 +1228,10 @@ gpg_do_load_prvkey (enum kind_of_key kk, int who, const uint8_t *keystring)
   memset (dek, 0, DATA_ENCRYPTION_KEY_SIZE);
   if (!r)
     {
-      DEBUG_INFO ("gpg_do_load_prvkey failed.\r\n");
       return -1;
     }
 
   memcpy (kd[kk].data, kdi.data, prvkey_len);
-  DEBUG_BINARY (kd[kk].data, prvkey_len);
   return 1;
 }
 
@@ -1320,9 +1309,6 @@ gpg_do_write_prvkey (enum kind_of_key kk, const uint8_t *key_data,
   uint8_t nonce0[DATA_ENCRYPTION_NONCE_SIZE];
   uint8_t dek_encrypted_1[DATA_ENCRYPTION_KEY_SIZE];
   uint8_t dek_encrypted_3[DATA_ENCRYPTION_KEY_SIZE];
-
-  DEBUG_INFO ("Key import\r\n");
-  DEBUG_SHORT (prvkey_len);
 
   /* Delete it first, if any.  */
   gpg_do_delete_prvkey (kk);
@@ -1427,7 +1413,7 @@ gpg_do_write_prvkey (enum kind_of_key kk, const uint8_t *key_data,
 	}
       else
 	{
-	  DEBUG_INFO ("No admin keystring!\r\n");
+	  ;
 	}
     }
 
@@ -1513,8 +1499,6 @@ proc_key_import (const uint8_t *data, int len)
     keystring_admin = keystring_md_pw3;
   else
     keystring_admin = NULL;
-
-  DEBUG_BINARY (data, len);
 
   if (*p++ != 0x4d)
     return 0;
@@ -1848,7 +1832,7 @@ gpg_data_scan (const uint8_t *do_start, const uint8_t *do_end)
     {
       dsc_h14 = ((*dsc_h14_p - 0x80) << 8) | *(dsc_h14_p + 1);
       if (dsc_l10_p == NULL)
-	DEBUG_INFO ("something wrong in DSC\r\n"); /* weird??? */
+	; /* weird??? */
       else if (dsc_l10_p < dsc_h14_p)
 	/* Possibly, power off during writing dsc_l10 */
 	dsc_l10 = 0;
@@ -2074,9 +2058,6 @@ gpg_do_get_data (uint16_t tag, int with_tag)
 
       res_p = res_APDU;
 
-      DEBUG_INFO ("   ");
-      DEBUG_SHORT (tag);
-
       if (do_p)
 	{
 	  if (copy_do (do_p, with_tag) < 0)
@@ -2097,9 +2078,6 @@ void
 gpg_do_put_data (uint16_t tag, const uint8_t *data, int len)
 {
   const struct do_table_entry *do_p = get_do_entry (tag);
-
-  DEBUG_INFO ("   ");
-  DEBUG_SHORT (tag);
 
   if (do_p)
     {
@@ -2196,12 +2174,8 @@ gpg_do_public_key (uint8_t kk_byte)
   int attr = gpg_get_algo_attr (kk);
   const uint8_t *pubkey = gpg_do_pubkey_addr (kk);
 
-  DEBUG_INFO ("Public key\r\n");
-  DEBUG_BYTE (kk_byte);
-
   if (pubkey == NULL)
     {
-      DEBUG_INFO ("none.\r\n");
       GPG_NO_RECORD ();
       return;
     }
@@ -2270,7 +2244,6 @@ gpg_do_public_key (uint8_t kk_byte)
   res_APDU_size = res_p - res_APDU;
   GPG_SUCCESS ();
 
-  DEBUG_INFO ("done.\r\n");
   return;
 }
 
@@ -2320,9 +2293,6 @@ gpg_do_keygen (uint8_t *buf)
 #define d (&buf[3])
 #define d1 (&buf[3+64])
 #define pubkey (&buf[3+256])
-
-  DEBUG_INFO ("Keygen\r\n");
-  DEBUG_BYTE (kk_byte);
 
   if (attr == ALGO_SECP256K1)
     {
@@ -2426,8 +2396,6 @@ gpg_do_keygen (uint8_t *buf)
       GPG_ERROR ();
       return;
     }
-
-  DEBUG_INFO ("Calling gpg_do_public_key...\r\n");
 
   if (kk == GPG_KEY_FOR_SIGNING)
     {

@@ -34,7 +34,6 @@
 #include "adc.h"
 #include "gnuk.h"
 #include "usb_lld.h"
-#include "usb-cdc.h"
 #include "random.h"
 #ifdef GNU_LINUX_EMULATION
 #include <unistd.h>
@@ -423,10 +422,6 @@ main (int argc, const char *argv[])
   eventflag_init (&led_event);
 
   random_init ();
-
-#ifdef DEBUG
-  stdout_init ();
-#endif
 
   ccid_thd = chopstx_create (PRIO_CCID, STACK_ADDR_CCID, STACK_SIZE_CCID,
 			     ccid_thread, NULL);

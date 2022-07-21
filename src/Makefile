@@ -31,10 +31,6 @@ else
 DEFS += -DBN256_C_IMPLEMENTATION
 endif
 
-ifneq ($(ENABLE_DEBUG),)
-CSRC += debug.c
-endif
-
 ifeq ($(CHIP),stm32f103)
 CSRC += mcu-stm32f103.c 
 endif
