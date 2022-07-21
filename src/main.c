@@ -514,10 +514,7 @@ main (int argc, const char *argv[])
 void
 fatal (uint8_t code)
 {
-  extern void _write (const char *s, int len);
-
   fatal_code = code;
   eventflag_signal (&led_event, LED_FATAL);
-  _write ("fatal\r\n", 7);
   for (;;);
 }
