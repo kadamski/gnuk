@@ -39,6 +39,7 @@ help=no
 vidpid=none
 target=FST_01
 with_dfu=default
+with_dfu_size=default
 debug=no
 sys1_compat=yes
 certdo=no
@@ -98,6 +99,8 @@ for option; do
     with_dfu=yes ;;
   --without-dfu)
     with_dfu=no ;;
+  --with-dfu-size=*)
+    with_dfu_size=$optarg ;;
   #
   # For emulation
   #
@@ -151,6 +154,7 @@ Configuration:
 			   executable is target independent
 			   but requires SYS 2.0 or newer
   --with-dfu		build image for DFU 		[<target specific>]
+  --with-dfu-size	specify the DFU bootloader size in KB
 EOF
   exit 0
 fi
@@ -261,15 +265,20 @@ if test "$with_dfu" = "yes"; then
       exit 1
   fi
   echo "Configured for DFU"
-  if test "$target" = "MAPLE_MINI"; then
-    # Note that the default bootloader is too large, need for instance
-    # STM32duino for DFU on Maple Mini
-    ORIGIN=0x08002000
-    FLASH_SIZE=$((FLASH_SIZE - 8))
+  if test "$with_dfu_size" = "default"; then
+    if test "$target" = "MAPLE_MINI"; then
+      # Note that the default bootloader is too large, need for instance
+      # STM32duino for DFU on Maple Mini
+      dfu_bootldr_size=8
+    else
+      dfu_bootldr_size=12
+    fi
   else
-    ORIGIN=0x08003000
-    FLASH_SIZE=$((FLASH_SIZE - 12))
+    dfu_bootldr_size=$with_dfu_size
   fi
+  ORIGIN=`printf '0x%x' $((0x08000000 + $dfu_bootldr_size * 1024))`
+  FLASH_SIZE=$((FLASH_SIZE - $dfu_bootldr_size))
+  echo "Using DFU bootloader size: ${dfu_bootldr_size}KB"
   DFU_DEFINE="#define DFU_SUPPORT 1"
 else
   with_dfu=no
