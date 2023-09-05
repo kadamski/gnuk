@@ -34,6 +34,9 @@ endif
 ifeq ($(CHIP),stm32f103)
 CSRC += mcu-stm32f103.c 
 endif
+ifeq ($(CHIP),gd32vf103)
+CSRC += mcu-stm32f103.c
+endif
 
 ifneq ($(USE_DFU),)
 OBJS_ADD += build/stdaln-sys-bin.o

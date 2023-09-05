@@ -1,3 +1,8 @@
+2023-09-05  NIIBE Yutaka  <gniibe@fsij.org>
+
+	* chopstx: Update to Chopstx 2.5.
+	* src/Makefile (CSRC): Add gd32vf103 case.
+
 2022-10-25  NIIBE Yutaka  <gniibe@fsij.org>
 
 	* src/neug.c [!__ARM_ARCH] (rbit): Support generic case.
