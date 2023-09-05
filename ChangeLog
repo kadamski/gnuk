@@ -1,3 +1,53 @@
+2022-10-25  NIIBE Yutaka  <gniibe@fsij.org>
+
+	* src/neug.c [!__ARM_ARCH] (rbit): Support generic case.
+
+2022-10-25  NIIBE Yutaka  <gniibe@fsij.org>
+
+	* src/usb-cdc.h: Remove.
+	* src/debug.c: Remove.
+	* src/debug.h: Remove.
+
+	* src/usb_ctrl.c [ENABLE_VIRTUAL_COM_PORT]: Remove.
+	* src/usb_desc.c [ENABLE_VIRTUAL_COM_PORT]: Remove.
+	* src/usb_conf.h [ENABLE_VIRTUAL_COM_PORT]: Remove.
+
+	* src/gnuk.h [DEBUG]: Remove debug functions and macros.
+
+	* src/usb-ccid.c (ccid_prepare_receive): Remove DEBUG_* output.
+	(ccid_power_on, ccid_send_status, ccid_power_off)
+	(ccid_send_data_block_internal, ccid_send_data_block_0x9000)
+	(ccid_send_data_block_gr, ccid_send_params, ccid_handle_data)
+	(ccid_thread): Likewise.
+	(usb_rx_ready, usb_tx_done): Remove debug support.
+	(stdout_init, _write): Remove.
+
+	* src/main.c [DEBUG] (main): Remove debug init.
+	(fatal): Don't use debug feature.
+
+	* src/ac.c (verify_pso_cds): Remove DEBUG_* output.
+	(verify_other): Likewise.
+	* src/flash.c (flash_do_write): Likewise.
+	(flash_warning, flash_put_data, flash_bool_write)
+	(flash_enum_write, flash_cnt123_increment): Likewise.
+	* src/openpgp-do.c (proc_resetting_code): Likewise.
+	(gpg_do_load_prvkey, gpg_do_write_prvkey, proc_key_import)
+	(gpg_data_scan, gpg_do_get_data, gpg_do_put_data)
+	(gpg_do_public_key, gpg_do_keygen): Likewise.
+	* src/openpgp.c (cmd_verify, cmd_change_password)
+	(cmd_reset_user_password, cmd_put_data, cmd_pgp_gakp)
+	(cmd_read_binary, cmd_select_file, cmd_get_data, cmd_pso)
+	(cmd_internal_authenticate, modify_binary, cmd_update_binary)
+	(cmd_write_binary, cmd_external_authenticate, cmd_get_challenge)
+	(process_command_apdu, openpgp_card_thread): Likewise.
+
+	* src/configure (debug): Remove.
+	(--enable-debug, --disable-debug): Remove.
+
+	* src/config.h.in: Remove DEBUG support.
+
+	* src/Makefile [ENABLE_DEBUG] (CSRC): Remove debug.c.
+
 2022-07-18  NIIBE Yutaka  <gniibe@fsij.org>
 
 	* tool/hub_ctrl.py (find_hubs): Catch the exception.
@@ -205,7 +255,7 @@
 	* regnual/types.h (NULL): Remove.
 	(size_t): Remove.
 
-2021-11-02  NIIBE Yutaka  <gniibe@shouwa2020.gniibe.org>
+2021-11-02  NIIBE Yutaka  <gniibe@fsij.org>
 
 	* src/ecc-mont.c (ecdh_compute_public_25519): Fix alignment
 	problem.
@@ -280,7 +330,7 @@
 2021-04-01  NIIBE Yutaka  <gniibe@fsij.org>
 
 	* tool/upgrade_by_passwd.py: Check configure target and
-	the config in the device are same target.
+	the config if the device are same target.
 
 2021-03-19  NIIBE Yutaka  <gniibe@fsij.org>
 
