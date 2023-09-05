@@ -1,5 +1,12 @@
 2023-09-05  NIIBE Yutaka  <gniibe@fsij.org>
 
+	* VERSION: 2.1.
+
+	* tool/gnuk_token.py (gnuk_token.cmd_external_authenticate): Don't
+	use command chaining.
+
+2023-09-05  NIIBE Yutaka  <gniibe@fsij.org>
+
 	* chopstx: Update to Chopstx 2.5.
 	* src/Makefile (CSRC): Add gd32vf103 case.
 

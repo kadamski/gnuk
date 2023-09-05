@@ -1,7 +1,7 @@
 """
 gnuk_token.py - a library for Gnuk Token
 
-Copyright (C) 2011, 2012, 2013, 2015, 2017, 2018
+Copyright (C) 2011, 2012, 2013, 2015, 2017, 2018, 2023
               Free Software Initiative of Japan
 Author: NIIBE Yutaka <gniibe@fsij.org>
 
@@ -469,7 +469,7 @@ class gnuk_token(object):
         return self.cmd_get_response(sw[1])
 
     def cmd_external_authenticate(self):
-        cmd_data = iso7816_compose(0x82, 0x00, 0x00, b"", cls=0x10)
+        cmd_data = iso7816_compose(0x82, 0x00, 0x00, b"")
         sw = self.icc_send_cmd(cmd_data)
         if len(sw) != 2:
             raise ValueError(sw)

@@ -1,26 +1,21 @@
 Gnuk - An Implementation of USB Cryptographic Token for GnuPG
 
 							    Version 2.1
-							     2022-0?-??
+							     2023-09-05
 							   Niibe Yutaka
 				      Free Software Initiative of Japan
 
 Release Notes
 =============
 
-This is the release of Gnuk, version 2.1, which has major incompatible
-changes to Gnuk 1.
-
-Please update your documentation for Gnuk Token, so that the
-instruction of importing keys won't cause any confusion.
+This is the release of Gnuk, version 2.1, which has major clean up
+from Gnuk 1.2.  Many (questionable) features have been removed.
 
 It has supports of Ed25519 and X25519 (ECDH on Curve25519).  It also
-has experimental support of ECDSA on secp256k1 and ECDH on secp256k1.
+has experimental support of Ed448 and X448.
 
-It supports new KDF-DO feature.  Please note that this is
-experimental.  To use the feature, you need to use newer GnuPG (2.2.6
-or later).  You need to prepare the KDF-DO on your token by the
-card-edit/kdf-setup command.
+It supports the KDF-DO feature.  You need to prepare the KDF-DO on
+your token by the card-edit/kdf-setup command of GnuPG.
 
 With FST-01SZ and GNU/Linux emulation, experimental ack button support
 is available for test.
@@ -63,13 +58,10 @@ A0: Good points of Gnuk are:
 	    "for Free Software"; Gnuk supports GnuPG.
 
 Q1: What kind of key algorithm is supported?
-A1: Gnuk version 1.0 only supports RSA-2048.
-    Gnuk version 1.2.x supports 255-bit EdDSA, as well as RSA-4096.
-    (Note that it takes long time to sign with RSA-4096.)
+A1: Gnuk version 2.1 supports Ed25519, Ed448, X25519 and X448.
 
 Q2: How long does it take for digital signing?
-A2: It takes a second and a half or so for RSA-2048. 
-    It takes more than 8 seconds for RSA-4096.
+A2: It takes less than a second for ECC.
 
 Q3: What's your recommendation for target board?
 A3: Orthodox choice is Olimex STM32-H103.
@@ -78,13 +70,11 @@ A3: Orthodox choice is Olimex STM32-H103.
     electronics, STM32 Nucleo F103 is the best choice for experiment.
 
 Q4: What's version of GnuPG are you using?
-A4: In Debian GNU/Linux system, I use GnuPG modern 2.2.23.
+A4: In Debian GNU/Linux system, I use GnuPG modern 2.4.1.
 
 Q5: What's version of pcscd and libccid are you using?
 A5: I don't use them, pcscd and libccid are optional, you can use Gnuk
     Token without them.
-    I tested pcscd 1.5.5-4 and libccid 1.3.11-2 which were in Debian
-    squeeze.
 
 Q6: What kinds of hardware is required for development?
 A6: You need a target board plus a JTAG/SWD debugger.  If you just
@@ -97,44 +87,6 @@ A7: Olimex STM32-H103 plus ARM-USB-TINY-H cost 70 Euro or so.
 
 Q8: How much does it cost for DIY version?
 A8: STM32 Nucleo F103 costs about $10 USD.
-
-Q9: I got an error like "gpg: selecting openpgp failed: ec=6.108", what's up?
-A9: Older GnuPG's SCDaemon has problems for handling insertion/removal of
-    card/reader.  When your newly inserted token is not found by
-    GnuPG, try killing scdaemon and let it to be invoked again.  I do:
-
-	 $ gpg-connect-agent "SCD KILLSCD" "SCD BYE" /bye
-
-    and confirm scdaemon doesn't exist, then,
-
-	 $ gpg-connect-agent learn /bye
-
-Qa: With GNOME 2, I can't use Gnuk Token for SSH.  How can we use it for SSH?
-Aa: You need to deactivate seahorse-agent and gnome-keyring, but use
-    gpg-agant for the role of ssh-agent.  For gnome-keyring please do:
-
-      $ gconftool-2 --type bool --set /apps/gnome-keyring/daemon-components/ssh false
-
-Qb: With GNOME 3.0, I can't use Gnuk Token at all.  Why?
-Ab: That's because gnome-keyring-daemon interferes GnuPG.  Type:
-
-      $ gnome-session-properties
-
-    and at the tab of "Startup Programs", disable check buttons for
-    "GPG Password Agent" and "SSH Key Agent".
-
-Qc: With GNOME 3.x (x >= 8?), I can't use Gnuk Token at all.  Why?
-Ac: That's because gnome-keyring-daemon interferes GnuPG.  Please
-    disable the invocation of gnome-keyring-daemon.  In Debian
-    wheezy, it's in the files /etc/xdg/autostart/gnome-keyring-ssh.desktop
-    and /etc/xdg/autostart/gnome-keyring-gpg.desktop.
-    We have a line something like:
-
-        OnlyShowIn=GNOME;Unity;MATE;
-
-    Please edit this line to:
-
-        OnlyShowIn=
 
 Qd: Do you know a good SWD debugger to connect FST-01 or something?
 Ad: ST-Link/V2 is cheap one.  We have a tool/stlinkv2.py as flash ROM
@@ -165,11 +117,9 @@ Gnuk is tested by test suite.  Please see the "tests" directory.
 	* PSO: Decipher
 	* INTERNAL AUTHENTICATE
 	* Changing value of password status bytes (0x00C4): forcesig
-	* Verify with pin pad
-	* Modify with pin pad
 	* Card holder certificate (read)
 	* Removal of keys
-	* Key generation on device side for RSA-2048
+	* Key generation on device side
 	* Overriding key import
 
 Original features of Gnuk, tested manually lightly:
@@ -200,7 +150,7 @@ script prepending 'bash' before './configure'.
 
 Some tools are written in Python.  If your Python is not installed as
 /usr/bin/python, please prepend 'python' or 'python3' for your command
-invocation.  I use Python 3.8 and PyUSB 1.0.2.
+invocation.  I use Python 3.11, PyUSB 1.2.2, CFFI 1.15.1.
 
 
 Source code
@@ -237,7 +187,7 @@ External source code
 
 Gnuk is distributed with external source code.
 
-* chopstx/  -- Chopstx 2.4
+* chopstx/  -- Chopstx 2.5
 
   We use Chopstx as the kernel for Gnuk.
 
@@ -307,10 +257,10 @@ You need GNU toolchain and newlib for 'arm-none-eabi' target.
 On Debian we can install the packages of gcc-arm-none-eabi
 and its friends.  I'm using:
 
-	binutils-arm-none-eabi	2.37-7+15
-	gcc-arm-none-eabi 	15:10.3-2021.07-4
-	libnewlib-arm-none-eabi	3.3.0-1
-	gdb-multiarch 		10.1-2
+	binutils-arm-none-eabi	2.40-2+18+b1
+	gcc-arm-none-eabi 	15:12.2.rel1-1
+	picolibc-arm-none-eabi	1.8-1
+	gdb-multiarch 		13.1-3
 
 Or else, see https://launchpad.net/gcc-arm-embedded for preparation of
 GNU Toolchain for 'arm-none-eabi' target.
@@ -427,15 +377,7 @@ In case of PyUSB tool, you need to stop pcscd.
   # systemctl stop pcscd
 
 
-(2) [Optional] Write fixed serial number
-
-If you use fixed serial number in the file 'GNUK_SERIAL_NUMBER', you can do:
-
-  $ EMAIL=<YOUR-EMAIL-ADDRESS> ../tool/gnuk_put_binary_usb.py -s ../GNUK_SERIAL_NUMBER
-  Writing serial number
-  ...
-
-(3) [Optional] Write card holder certificate
+(2) [Optional] Write card holder certificate
 
 If you have card holder certificate binary file, you can do:
 
@@ -447,18 +389,6 @@ If you have card holder certificate binary file, you can do:
 
 How to run
 ==========
-
-Debug enabled
--------------
-
-If you compiled with --enable-debug option, Gnuk has two interfaces
-(one is CCID/ICCD device and another is virtual COM port).  Open
-virtual COM port by:
-
-  $ cu -l /dev/ttyACM0
-
-and you will see debug output of Gnuk.
-
 
 Testing Gnuk
 ------------
@@ -483,12 +413,12 @@ Login name, Sex, Languages, URL.  To do so, GnuPG command is:
 Note that the factory setting of user password is "123456" and admin
 password is "12345678" as the specification.
 
-It is recommended to create your keys on your computer, and import
-them to Gnuk Token.  After you create your keys (they must be 2048-bit
-RSA), you can import them.
+It is recommended to create your keys on your host computer, and
+import them to Gnuk Token.  After you create your keys (they must be
+supported ones by Gnuk Token), you can import them.
 
-Gnuk supports key generation, but this feature is young and should be
-considered experimental.
+Gnuk supports key generation, but this feature should be considered
+experimental.
 
 For detail, please see documentation under doc/.  You can see the HTML
 version at: https://www.fsij.org/doc-gnuk/

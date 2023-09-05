@@ -3,13 +3,41 @@ Gnuk NEWS - User visible changes
 
 * Major changes in Gnuk 2.1
 
-  Released 2022-XX-XX, by NIIBE Yutaka
+  Released 2023-09-05, by NIIBE Yutaka
 
-** Removal of RSA support
+** Ed448 and X448 support.
+Ed448 and X448 support are added.  This support is experimental.
 
-** Replace AES implementation
+** Removal of RSA support.
+RSA support has been removed.
 
-** Change of authentication for firmware upgrade
+** Removal of NIST P-256 support.
+NIST P-256 curve support has been removed.
+
+** Removal of debug option at configure (--enable-debug).
+Debug option with CDC-ACM has been removed.  Please have a JTAG/SWD
+debugger and use GDB.
+
+** Removal of highly experimental pinpad support.
+Pinpad support has been removed.
+
+** Removal of old test.
+We had old tests under "test/" directory which used python-nose.  We
+switched to pytest and it's now under "tests/" directory.
+
+** Replace AES implementation for encrypting secret keys on flash.
+Secret keys on flash is encrypted with AES-GCM-SIV.  We now use
+AES-256 implementation of our own.
+
+** Change of authentication for firmware upgrade.
+In Gnuk 1.2, we registered an RSA public key for firmware upgrade.
+The RSA key is used by Gnuk Token to do challenge-response
+authentication, so that only the secret key holder of RSA can do the
+firmware upgrade.  In Gnuk 2, PIN authentication for Admin is used
+for firmware upgrade.
+
+** Upgrade of Chopstx
+We use Chopstx 2.5.  It uses picolibc (instead of newlib).
 
 
 * Major changes in Gnuk 1.2.19
