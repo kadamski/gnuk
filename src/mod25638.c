@@ -231,57 +231,16 @@ void
 mod25519_reduce (bn256 *X)
 {
   uint32_t q;
-  bn256 r0[1], r1[1];
-  int flag;
+  bn256 R[1];
 
-  memcpy (r0, X, sizeof (bn256));
-  q = (r0->word[7] >> 31);
-  r0->word[7] &= 0x7fffffff;
-  if (q)
-    {
-      bn256_add_uint (r0, r0, 19);
-      q = (r0->word[7] >> 31);
-      r0->word[7] &= 0x7fffffff;
-      if (q)
-	{
-	  bn256_add_uint (r1, r0, 19);
-	  q = (r1->word[7] >> 31);
-	  r1->word[7] &= 0x7fffffff;
-	  flag = 0;
-	}
-      else
-	flag = 1;
-    }
-  else
-    {
-      bn256_add_uint (r1, r0, 19);
-      q = (r1->word[7] >> 31);	 /* dummy */
-      r1->word[7] &= 0x7fffffff; /* dummy */
-      if (q)
-	flag = 2;
-      else
-	flag = 3;
-    }
+  q = (X->word[7] >> 31);
+  X->word[7] &= 0x7fffffff;
 
-  if (flag)
-    {
-      bn256_add_uint (r1, r0, 19);
-      q = (r1->word[7] >> 31);
-      r1->word[7] &= 0x7fffffff;
-      if (q)
-	memcpy (X, r1, sizeof (bn256));
-      else
-	memcpy (X, r0, sizeof (bn256));
-    }
-  else
-    {
-      if (q)
-	{
-	  asm volatile ("" : : "r" (q) : "memory");
-	  memcpy (X, r1, sizeof (bn256));
-	  asm volatile ("" : : "r" (q) : "memory");
-	}
-      else
-	memcpy (X, r1, sizeof (bn256));
-    }
+  bn256_add_uint (X, X, q * 19);
+
+  bn256_add_uint (R, X, 19);
+  q = (R->word[7] >> 31);
+  R->word[7] &= 0x7fffffff;
+
+  bn256_set_cond (X, R, q);
 }

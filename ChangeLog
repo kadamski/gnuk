@@ -1,3 +1,15 @@
+2023-12-01  NIIBE Yutaka  <gniibe@fsij.org>
+
+	* src/bn.c (bn256_swap_cond): New.
+	(bn256_set_cond): New.
+	* src/mod25638.c (mod25519_reduce): Use bn256_set_cond.
+	* src/ecc-x25519.c: Rename from ecc-mont.c, as computation is
+	actually X25519, while it's host side which uses big-endian
+	private key.
+	(mont_d_and_a): Refactor not using struct pt.
+	(compute_nQ): Use bn256_swap_cond.
+	* src/Makefile (CSRC): Follow the rename of exx-x25519.c.
+
 2023-09-05  NIIBE Yutaka  <gniibe@fsij.org>
 
 	* VERSION: 2.1.

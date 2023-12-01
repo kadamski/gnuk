@@ -1,7 +1,7 @@
 /*
  * bn.c -- 256-bit (and 512-bit) bignum calculation
  *
- * Copyright (C) 2011, 2013, 2014, 2019
+ * Copyright (C) 2011, 2013, 2014, 2019, 2023
  *               Free Software Initiative of Japan
  * Author: NIIBE Yutaka <gniibe@fsij.org>
  *
@@ -18,7 +18,7 @@
  * License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
 
@@ -425,3 +425,35 @@ bn256_random (bn256 *X)
     }
 }
 #endif
+
+void
+bn256_swap_cond (bn256 *A, bn256 *B, uint32_t b)
+{
+  uint32_t mask = 0UL - b;
+  int i;
+  uint32_t *p = A->word;
+  uint32_t *q = B->word;
+
+  for (i = 0; i < BN256_WORDS; i++)
+    {
+      uint32_t t = mask & (*p^*q);
+      *p++ ^= t;
+      *q++ ^= t;
+    }
+}
+
+void
+bn256_set_cond (bn256 *A, const bn256 *B, uint32_t b)
+{
+  uint32_t mask1 = 0UL - b;
+  uint32_t mask2 = b - 1UL;
+  int i;
+  uint32_t *p = A->word;
+  const uint32_t *q = B->word;
+
+  for (i = 0; i < BN256_WORDS; i++)
+    {
+      *p = (*p & mask2) | (*q++ & mask1);
+      p++;
+    }
+}

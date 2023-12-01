@@ -1545,6 +1545,7 @@ proc_key_import (const uint8_t *data, int len)
       if (len - 12 != 32)
 	return 0;		/* Error.  */
 
+      /* Revert the order, because it's big-endian MPI from server.  */
       for (i = 0; i < 32; i++)
 	priv[31-i] = data[12+i];
       ecdh_compute_public_25519 (priv, pubkey);

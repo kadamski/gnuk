@@ -21,3 +21,5 @@ int bn256_is_even (const bn256 *X);
 int bn256_is_ge (const bn256 *A, const bn256 *B);
 int bn256_cmp (const bn256 *A, const bn256 *B);
 void bn256_random (bn256 *X);
+void bn256_swap_cond (bn256 *A, bn256 *B, uint32_t b);
+void bn256_set_cond (bn256 *A, const bn256 *B, uint32_t b);
