@@ -457,3 +457,49 @@ bn256_set_cond (bn256 *A, const bn256 *B, uint32_t b)
       p++;
     }
 }
+
+void
+bn256_add_cond (bn256 *A, const bn256 *B, uint32_t b)
+{
+  uint32_t mask = 0UL - b;
+  uint32_t *p = A->word;
+  const uint32_t *q = B->word;
+  uint32_t carry = 0;
+  int i;
+  uint32_t v;
+
+  for (i = 0; i < BN256_WORDS; i++)
+    {
+      v = *q & mask;
+      *p += carry;
+      carry = (*p < carry);
+      *p += v;
+      carry = (*p < v);
+      p++;
+      q++;
+    }
+}
+
+
+void
+bn256_sub_cond (bn256 *A, const bn256 *B, uint32_t b)
+{
+  uint32_t mask = 0UL - b;
+  uint32_t *p = A->word;
+  const uint32_t *q = B->word;
+  uint32_t borrow = 0;
+  int i;
+  uint32_t v;
+
+  for (i = 0; i < BN256_WORDS; i++)
+    {
+      uint32_t borrow0 = (*p < borrow);
+
+      v = *q & mask;
+      *p -= borrow;
+      borrow = (*p < v) + borrow0;
+      *p -= v;
+      p++;
+      q++;
+    }
+}

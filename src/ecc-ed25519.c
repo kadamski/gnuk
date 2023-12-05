@@ -3,7 +3,7 @@
  *                 the twisted Edwards curve: -x^2 + y^2 = 1 + d*x^2*y^2
  *                 d = -121665/121666
  *
- * Copyright (C) 2014, 2017  Free Software Initiative of Japan
+ * Copyright (C) 2014, 2017, 2023  Free Software Initiative of Japan
  * Author: NIIBE Yutaka <gniibe@fsij.org>
  *
  * This file is a part of Gnuk, a GnuPG USB Token implementation.
@@ -19,7 +19,7 @@
  * License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
 
@@ -625,10 +625,7 @@ mod_reduce_M (bn256 *R, const bn512 *A)
   r->word[7] &= 0x0fffffff;
   /* R -= R' */
   borrow = bn256_sub (R, R, r);
-  if (borrow)
-    bn256_add (R, R, M);
-  else
-    bn256_add ((bn256 *)tmp, R, M);
+  bn256_add_cond (R, M, borrow);
 
   /* Q_size: 5 */
   bnX_mul_C (tmp, q, 5); /* TMP = Q*C */
@@ -640,10 +637,7 @@ mod_reduce_M (bn256 *R, const bn512 *A)
   /* R += R' */
   bn256_add (R, R, r);
   borrow = bn256_sub (R, R, M);
-  if (borrow)
-    bn256_add (R, R, M);
-  else
-    bn256_add ((bn256 *)tmp, R, M);
+  bn256_add_cond (R, M, borrow);
 
   /* Q_size: 1 */
   bnX_mul_C (tmp, q, 1); /* TMP = Q*C */
@@ -652,10 +646,7 @@ mod_reduce_M (bn256 *R, const bn512 *A)
   memcpy (r, tmp, sizeof (uint32_t)*5);
   /* R -= R' */
   borrow = bn256_sub (R, R, r);
-  if (borrow)
-    bn256_add (R, R, M);
-  else
-    bn256_add ((bn256 *)tmp, R, M);
+  bn256_add_cond (R, M, borrow);
 #undef borrow
 }
 
@@ -700,11 +691,7 @@ eddsa_sign_25519 (const uint8_t *input, size_t ilen, uint32_t *out,
 
   memcpy (r, tmp, sizeof (bn256));
 
-  if ((borrow && !carry))
-    bn256_add (s, s, M);
-  else
-    bn256_add (tmp, s, M);
-
+  bn256_add_cond (s, M, (borrow && (carry ^ 1)));
   return 0;
 }
 

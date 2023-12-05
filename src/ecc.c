@@ -1,7 +1,7 @@
 /*                                                    -*- coding: utf-8 -*-
  * ecc.c - Elliptic curve over GF(prime)
  *
- * Copyright (C) 2011, 2013, 2014, 2015
+ * Copyright (C) 2011, 2013, 2014, 2015, 2023
  *               Free Software Initiative of Japan
  * Author: NIIBE Yutaka <gniibe@fsij.org>
  *
@@ -18,7 +18,7 @@
  * License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
 
@@ -344,10 +344,7 @@ FUNC(ecdsa) (bn256 *r, bn256 *s, const bn256 *z, const bn256 *d)
 	  /* 1 <= k <= N - 1 */
 	  FUNC(compute_kG) (KG, k);
 	  borrow = bn256_sub (r, KG->x, N);
-	  if (borrow)
-	    memcpy (r, KG->x, sizeof (bn256));
-	  else
-	    memcpy (KG->x, r, sizeof (bn256));
+          bn256_set_cond (r, KG->x, borrow);
 	}
       while (bn256_is_zero (r));
 
@@ -355,10 +352,7 @@ FUNC(ecdsa) (bn256 *r, bn256 *s, const bn256 *z, const bn256 *d)
       bn256_mul (tmp, r, d);
       mod_reduce (s, tmp, N, MU_lower);
       carry = bn256_add (s, s, z);
-      if (carry)
-	bn256_sub (s, s, N);
-      else
-	bn256_sub ((bn256 *)tmp, s, N);
+      bn256_sub_cond (s, N, carry);
       bn256_mul (tmp, s, k_inv);
       mod_reduce (s, tmp, N, MU_lower);
     }

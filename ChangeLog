@@ -1,3 +1,11 @@
+2023-12-05  NIIBE Yutaka  <gniibe@fsij.org>
+
+	* src/bn.c (bn256_add_cond, bn256_sub_cond): New.
+	* src/ecc-ed25519.c (mod_reduce_M): Use bn256_add_cond.
+	(eddsa_sign_25519): Likewise.
+	* src/modp256k1.c (modp256k1_reduce): Use bn256_set_cond.
+	* src/ecc.c (ecdsa): Use bn256_set_cond and bn256_sub_cond.
+
 2023-12-01  NIIBE Yutaka  <gniibe@fsij.org>
 
 	* src/bn.c (bn256_swap_cond): New.
