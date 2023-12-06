@@ -1,3 +1,10 @@
+2023-12-06  NIIBE Yutaka  <gniibe@fsij.org>
+
+	* src/modinv.c, src/modinv.h: New.
+	* src/Makefile (CSRC): Add modinv.c.
+	* src/ecc-x25519.c (compute_nQ): Use mod256_inv.
+	* src/ecc-ed25519.c (point_ptc_to_ac): Likewise.
+
 2023-12-05  NIIBE Yutaka  <gniibe@fsij.org>
 
 	* src/bn.c (bn256_add_cond, bn256_sub_cond): New.

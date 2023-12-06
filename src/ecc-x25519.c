@@ -27,7 +27,7 @@
 #include <string.h>
 #include "bn.h"
 #include "mod25638.h"
-#include "mod.h"
+#include "modinv.h"
 
 /*
  * References:
@@ -233,7 +233,7 @@ compute_nQ (bn256 *res, const bn256 *n, const bn256 *q_x)
    * but returns 0 (like the implementation of z^(p-2)), thus, RES will
    * be 0 in that case, which is correct value.
    */
-  mod_inv (res, z0, p25519);
+  mod256_inv (res, z0, 1);
   mod25638_mul (res, res, x0);
   mod25519_reduce (res);
 }

@@ -27,7 +27,7 @@
 #include <string.h>
 
 #include "bn.h"
-#include "mod.h"
+#include "modinv.h"
 #include "mod25638.h"
 #include "sha512.h"
 
@@ -244,9 +244,9 @@ point_ptc_to_ac (ac *X, const ptc *A)
 
   /*
    * A->z may be bigger than p25519, or two times bigger than p25519.
-   * But this is no problem for computation of mod_inv.
+   * But this is no problem for computation of mod256_inv.
    */
-  mod_inv (z_inv, A->z, p25519);
+  mod256_inv (z_inv, A->z, 1);
 
   mod25638_mul (X->x, A->x, z_inv);
   mod25519_reduce (X->x);
