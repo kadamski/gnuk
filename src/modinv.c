@@ -81,7 +81,7 @@ static const uint32_t modulus_inv31_secp256k1 = 0x2ddacacf;
  * t = [ u  v ]
  *     [ q  r ]
  *
- * u_ is tweaked by -1, so that overflow doesn't occur.
+ * u_ is tweaked by -1, so that overflow never occurs.
  */
 typedef struct {
   int32_t u_, v;
@@ -145,25 +145,27 @@ modinv_divsteps (int32_t zeta, uint32_t f0, uint32_t g0, matrix_2x2 *t)
  */
 static void
 modinv_update_de (sr256 *d, sr256 *e, const matrix_2x2 *t,
-                    const sr256 *modulus, uint32_t inv31)
+                  const sr256 *modulus, uint32_t inv31)
 {
   const int32_t u_ = t->u_, v = t->v, q = t->q, r = t->r;
   int32_t di, ei, me, sd, se;
   int64_t cd, ce;
-  int64_t md_;
+  int32_t md_; /* MD_ stands for MD minus 1, which keeps <= 2**31-1 */
   int i;
 
   sd = d->v[8] >> 31;
   se = e->v[8] >> 31;
-  md_ = (u_ & sd) + (v & se) + (int64_t)(1 & sd);
+  md_ = (u_ & sd) + (v & se);
   me = (q & sd) + (r & se);
   di = d->v[0];
   ei = e->v[0];
   cd = (int64_t)u_ * di + di + (int64_t)v * ei;
   ce = (int64_t)q * di + (int64_t)r * ei;
-  md_ -= (inv31 * (uint32_t)cd + md_) & 0x7fffffff;
+  /* MD_ + 1 in the following expression may never overflow in uint32_t.
+   * The value of MD_ may be 2**31-1, but the addition is by unsigned.  */
+  md_ -= ((uint32_t)md_ + (1 & sd) + inv31 * (uint32_t)cd) & 0x7fffffff;
   me -= (inv31 * (uint32_t)ce + me) & 0x7fffffff;
-  cd += modulus->v[0] * md_;
+  cd += (int64_t)modulus->v[0] * md_ + (int64_t)(modulus->v[0] & sd);
   ce += (int64_t)modulus->v[0] * me;
   cd >>= 31;
   ce >>= 31;
@@ -173,11 +175,15 @@ modinv_update_de (sr256 *d, sr256 *e, const matrix_2x2 *t,
       ei = e->v[i];
       cd += (int64_t)u_ * di + di + (int64_t)v * ei;
       ce += (int64_t)q * di + (int64_t)r * ei;
+#if MODINV_LIMBS_CANBE_SKIPPED
       if (i == 1  || i == 8)
         {
-          cd += modulus->v[i] * md_;
+#endif
+          cd += (int64_t)modulus->v[i] * md_ + (int64_t)(modulus->v[i] & sd);
           ce += (int64_t)modulus->v[i] * me;
+#if MODINV_LIMBS_CANBE_SKIPPED
         }
+#endif
       d->v[i - 1] = (int32_t)cd & 0x7fffffff;
       e->v[i - 1] = (int32_t)ce & 0x7fffffff;
       cd >>= 31;

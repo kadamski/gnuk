@@ -1,6 +1,15 @@
 Gnuk NEWS - User visible changes
 
 
+* Major changes in Gnuk 2.2
+
+  Released 202?-??-??, by NIIBE Yutaka
+
+** Modular inverse by safegcd256 for Ed25519 and X25519 computation
+
+Ed25519 and X25519 computation are now faster with safegcd256.
+
+
 * Major changes in Gnuk 2.1
 
   Released 2023-09-05, by NIIBE Yutaka

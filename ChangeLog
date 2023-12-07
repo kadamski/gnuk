@@ -1,3 +1,9 @@
+2023-12-07  NIIBE Yutaka  <gniibe@fsij.org>
+
+	* src/modinv.c (modinv_update_de): Use 32-bit MD_
+	which holds the value of MD minus one.  Change the
+	computation, using unsigned 32-bit integer for MD_.
+
 2023-12-06  NIIBE Yutaka  <gniibe@fsij.org>
 
 	* src/modinv.c, src/modinv.h: New.
