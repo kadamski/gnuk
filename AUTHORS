@@ -27,6 +27,10 @@ Jeremy Drake:
 Kaz Kojima:
     Added STM32 Primer2 support.
 
+Nick (@kousu at GitLab):
+    Modified:
+	src/ecc.c
+
 NIIBE Yutaka:
     Founder of the project.
     Wrote tools for STLink/V2:
@@ -83,6 +87,8 @@ NIIBE Yutaka:
 	src/jpc_p256k1.c
 	src/mod.h
 	src/mod.c
+	src/modinv.h
+	src/modinv.c
 	src/mod25638.h
 	src/mod25638.c
 	src/modp256k1.h

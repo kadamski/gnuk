@@ -119,7 +119,13 @@ FUNC(compute_kG) (ac *X, const bn256 *K)
   jpc Q[1], tmp[1], *dst;
   int i;
   int vk;
-  uint32_t k_is_even = bn256_is_even (K);
+  uint32_t k_is_even;
+
+  if (bn256_is_zero (K) || bn256_sub (K_dash, K, N) == 0)
+    /* == 0 or >= N, it's not valid.  */
+    return -1;
+
+  k_is_even = bn256_is_even (K);
 
   bn256_sub_uint (K_dash, K, k_is_even);
   /* It keeps the condition: 1 <= K' <= N - 2, and K' is odd.  */
@@ -241,7 +247,7 @@ FUNC(compute_kP) (ac *X, const bn256 *K, const ac *P)
   uint8_t index[86]; /* Lower 2-bit for index absolute value, msb is
 			for sign (encoded as: 0 means 1, 1 means -1).  */
   bn256 K_dash[1];
-  uint32_t k_is_even = bn256_is_even (K);
+  uint32_t k_is_even;
   jpc Q[1], tmp[1], *dst;
   int i;
   int vk;
@@ -251,9 +257,11 @@ FUNC(compute_kP) (ac *X, const bn256 *K, const ac *P)
   if (point_is_on_the_curve (P) < 0)
     return -1;
 
-  if (bn256_sub (K_dash, K, N) == 0)	/* >= N, it's too big.  */
+  if (bn256_is_zero (K) || bn256_sub (K_dash, K, N) == 0)
+    /* == 0 or >= N, it's not valid.  */
     return -1;
 
+  k_is_even = bn256_is_even (K);
   bn256_sub_uint (K_dash, K, k_is_even);
   /* It keeps the condition: 1 <= K' <= N - 2, and K' is odd.  */
 
@@ -337,12 +345,9 @@ FUNC(ecdsa) (bn256 *r, bn256 *s, const bn256 *z, const bn256 *d)
       do
 	{
 	  bn256_random (k);
-	  if (bn256_add_uint (k, k, 1))
-	    continue;
-	  if (bn256_sub (tmp_k, k, N) == 0)	/* >= N, it's too big.  */
-	    continue;
-	  /* 1 <= k <= N - 1 */
-	  FUNC(compute_kG) (KG, k);
+	  if (FUNC(compute_kG) (KG, k) < 0)
+            continue;
+	  /* Success of compute_kG means 1 <= k <= N - 1 here.  */
 	  borrow = bn256_sub (r, KG->x, N);
           bn256_set_cond (r, KG->x, borrow);
 	}
@@ -366,8 +371,8 @@ FUNC(ecdsa) (bn256 *r, bn256 *s, const bn256 *z, const bn256 *d)
 /**
  * @brief Check if a secret d0 is valid or not
  *
- * @param D0	scalar D0: secret
- * @param D1	scalar D1: secret candidate N-D0
+ * @param     D0	scalar D0: secret candidate
+ * @out param D1	scalar D1: secret candidate N-D0
  *
  * Return 0 on error.
  * Return -1 when D1 should be used as the secret
@@ -378,15 +383,20 @@ FUNC(check_secret) (const bn256 *d0, bn256 *d1)
 {
   ac Q0[1], Q1[1];
 
-  if (bn256_is_zero (d0) || bn256_sub (d1, N, d0) != 0)
-    /* == 0 or >= N, it's not valid.  */
+  if (FUNC(compute_kG) (Q0, d0) < 0)
     return 0;
 
-  FUNC(compute_kG) (Q0, d0);
+  /* Success of compute_kG means 1 <= d0 <= N - 1 here.
+   * Then, it holds: N - 1 >= N - d0 >= N - (N - 1)
+   * Thus, with d1 = N - d0,
+   * it holds: 1 <= d1 <= N - 1.
+   */
+  bn256_sub (d1, N, d0);
   FUNC(compute_kG) (Q1, d1);
 
   /*
    * Jivsov compliant key check
+   * https://datatracker.ietf.org/doc/html/draft-jivsov-ecc-compact
    */
   return bn256_cmp (Q1[0].y, Q0[0].y);
 }

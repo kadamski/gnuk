@@ -1,5 +1,13 @@
 2023-12-07  NIIBE Yutaka  <gniibe@fsij.org>
 
+	* src/ecc.c (compute_kG): Do input validation on K.
+	(compute_kP): Check against 0 with K, too.
+	(ecdsa): Rely on compute_kG input validation.
+	(check_secret): Likewise.
+	Contributed by Nick (@kousu at GitLab).
+
+2023-12-07  NIIBE Yutaka  <gniibe@fsij.org>
+
 	* src/modinv.c (modinv_update_de): Use 32-bit MD_
 	which holds the value of MD minus one.  Change the
 	computation, using unsigned 32-bit integer for MD_.
