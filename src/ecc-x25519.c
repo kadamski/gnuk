@@ -124,70 +124,39 @@ mont_d_and_a (fe *x0, fe *z0, fe *x1, fe *z1, const fe *dif_x, fe *t0, fe *t1)
 #define zp   z0
 #define xs   x1
 #define zs   z1
+#define C       t0
+#define D       t1
+#define A       x1
+#define B       x0
+#define CB      t0
+#define DA      t1
+#define AA      z0
+#define BB      x1
+#define CBpDA   z1              /* CB + DA */
+#define CBmDA   t0              /* CB - DA */
+#define E       t1
+#define CBmDAsq t0              /* (CB - DA)^2 */
+#define a24E    t0
+#define a24EpAA z0              /* AA + a24E */
 
-#define tmp0 t0
-#define tmp1 t1
-#define tmp2 x1
-#define tmp3 x0
-#define tmp4 t0
-#define tmp5 t1
-#define tmp6 z0
-#define tmp7 x1
-#define tmp8 z1
-#define tmp9 t0
-#define tmpA t1
-#define tmpB t0
-#define tmpC t0
-#define tmpD z0
-
-                                    fe_add (tmp0,
-                                              x1,
-                                              z1);
-                                            fe_sub (tmp1,
-                                                      x1,
-                                                      z1);
-  fe_add (tmp2,
-            x0,
-            z0);
-          fe_sub (tmp3,
-                    x0,
-                    z0);
-                                    fe_mul (tmp4,
-                                            tmp3,
-                                            tmp0);
-                                            fe_mul (tmp5,
-                                                    tmp2,
-                                                    tmp1);
-  fe_sqr (tmp6,
-          tmp2);
-          fe_sqr (tmp7,
-                  tmp3);
-                                    fe_add (tmp8,
-                                            tmp4,
-                                            tmp5);
-                                            fe_sub (tmp9,
-                                                    tmp4,
-                                                    tmp5);
-  fe_mul (xp,
-          tmp6,
-          tmp7);
-          fe_sub (tmpA,
-                  tmp6,
-                  tmp7);
-                                    fe_sqr (xs,
-                                            tmp8);
-                                            fe_sqr (tmpB,
-                                                    tmp9);
-                                            fe_mul (zs,
-                                                    tmpB, dif_x);
-          fe_m_d (tmpC,
-                  tmpA);
-          fe_add (tmpD,
-                  tmp6,
-                  tmpC);
-          fe_mul (zp,
-                  tmpD,
-                  tmpA);
+                                    fe_add (C, x1, z1);
+                                            fe_sub (D, x1, z1);
+  fe_add (A, x0, z0);
+          fe_sub (B, x0, z0);
+                                    fe_mul (CB, B, C);
+                                            fe_mul (DA, A, D);
+  fe_sqr (AA, A);
+          fe_sqr (BB, B);
+                                    fe_add (CBpDA, CB, DA);
+                                            fe_sub (CBmDA, CB, DA);
+  fe_mul (xp, AA, BB);
+          fe_sub (E, AA, BB);
+                                    fe_sqr (xs, CBpDA);
+                                            fe_sqr (CBmDAsq, CBmDA);
+                                            fe_mul (zs, CBmDAsq, dif_x);
+          fe_m_d (a24E, E);
+          fe_add (a24EpAA, AA, a24E);
+          fe_mul (zp, a24EpAA, E);
 }
 
 

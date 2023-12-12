@@ -1,3 +1,8 @@
+2023-12-12  NIIBE Yutaka  <gniibe@fsij.org>
+
+	* src/ecc-x25519.c (mont_d_and_a): Use the variable name
+	from RFC 7748, so that reading the code can be easier.
+
 2023-12-07  NIIBE Yutaka  <gniibe@fsij.org>
 
 	* src/ecc.c (compute_kG): Do input validation on K.
