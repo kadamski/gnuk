@@ -99,6 +99,27 @@ mod25638_mul_121665 (bn256 *x, const bn256 *a)
   x->word[0] += c * 38;
 }
 
+/* X = 0 */
+static void
+mod25638_0 (bn256 *x)
+{
+  memset(x, 0, sizeof (bn256));
+}
+
+/* X = 1 */
+static void
+mod25638_1 (bn256 *x)
+{
+  x->word[0] = 1;
+  memset(&x->word[1], 0, sizeof (uint32_t) * (BN256_WORDS - 1));
+}
+
+/* DST = SRC */
+static void
+mod25638_copy (bn256 *dst, const bn256 *src)
+{
+  memcpy (dst, src, sizeof (bn256));
+}
 
 /* fe: Field Element */
 typedef bn256 fe;
@@ -106,7 +127,11 @@ typedef bn256 fe;
 #define fe_sub mod25638_sub
 #define fe_mul mod25638_mul
 #define fe_sqr mod25638_sqr
-#define fe_m_d mod25638_mul_121665
+#define fe_a24 mod25638_mul_121665
+#define fe_swap_cond bn256_swap_cond
+#define fe_0         mod25638_0
+#define fe_1         mod25638_1
+#define fe_copy      mod25638_copy
 
 /**
  * @brief  Process Montgomery double-and-add
@@ -154,7 +179,7 @@ mont_d_and_a (fe *x0, fe *z0, fe *x1, fe *z1, const fe *dif_x, fe *t0, fe *t1)
                                     fe_sqr (xs, CBpDA);
                                             fe_sqr (CBmDAsq, CBmDA);
                                             fe_mul (zs, CBmDAsq, dif_x);
-          fe_m_d (a24E, E);
+          fe_a24 (a24E, E);
           fe_add (a24EpAA, AA, a24E);
           fe_mul (zp, a24EpAA, E);
 }
@@ -171,27 +196,26 @@ static void
 compute_nQ (bn256 *res, const bn256 *n, const bn256 *q_x)
 {
   int i;
-  bn256 x0[1], z0[1], x1[1], z1[1];
-  bn256 t0[1], t1[1];
+  fe x0[1], z0[1], x1[1], z1[1];
+  fe t0[1], t1[1];
   uint32_t swap = 0;
   const unsigned char *np = (const unsigned char *)n->word;
 
   /* P0 = O = (1:0)  */
-  memset (x0, 0, sizeof (bn256));
-  x0->word[0] = 1;
-  memset (z0, 0, sizeof (bn256));
+  fe_1 (x0);
+  fe_0 (z0);
 
   /* P1 = (X:1) */
-  memcpy (x1, q_x, sizeof (bn256));
-  memcpy (z1, x0, sizeof (bn256));
+  fe_copy (x1, q_x);
+  fe_copy (z1, x0);
 
   for (i = 254; i >= 0; i--)
     {
       uint32_t b = (np[i>>3]>>(i&7))&1;
 
       swap ^= b;
-      bn256_swap_cond (x0, x1, swap);
-      bn256_swap_cond (z0, z1, swap);
+      fe_swap_cond (x0, x1, swap);
+      fe_swap_cond (z0, z1, swap);
       swap = b;
       mont_d_and_a (x0, z0, x1, z1, q_x, t0, t1);
     }

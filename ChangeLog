@@ -1,5 +1,10 @@
 2023-12-13  NIIBE Yutaka  <gniibe@fsij.org>
 
+	* src/ecc-x25519.c (mod25638_0, mod25638_1, mod25638_copy)
+	(fe_a24): Rename from fe_m_d.
+	(mont_d_and_a): Use fe_a24.
+	(compute_nQ): Use fe_0, fe_1, fe_copy, and fe_swap_cond.
+
 	* src/bn.c (bn256_swap_cond, bn256_set_cond, bn256_add_cond)
 	(bn256_sub_cond): Add asm volatile statement to prevent optimizing
 	out the intended const-time operation, from libgcrypt.
