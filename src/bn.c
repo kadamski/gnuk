@@ -429,11 +429,12 @@ bn256_random (bn256 *X)
 void
 bn256_swap_cond (bn256 *A, bn256 *B, uint32_t b)
 {
-  uint32_t mask = 0UL - b;
   int i;
+  uint32_t mask = 0UL - b;
   uint32_t *p = A->word;
   uint32_t *q = B->word;
 
+  asm volatile ("" : "+r" (mask) : : "memory");
   for (i = 0; i < BN256_WORDS; i++)
     {
       uint32_t t = mask & (*p^*q);
@@ -445,12 +446,14 @@ bn256_swap_cond (bn256 *A, bn256 *B, uint32_t b)
 void
 bn256_set_cond (bn256 *A, const bn256 *B, uint32_t b)
 {
+  int i;
   uint32_t mask1 = 0UL - b;
   uint32_t mask2 = b - 1UL;
-  int i;
   uint32_t *p = A->word;
   const uint32_t *q = B->word;
 
+  asm volatile ("" : "+r" (mask1) : : "memory");
+  asm volatile ("" : "+r" (mask2) : : "memory");
   for (i = 0; i < BN256_WORDS; i++)
     {
       *p = (*p & mask2) | (*q++ & mask1);
@@ -461,13 +464,14 @@ bn256_set_cond (bn256 *A, const bn256 *B, uint32_t b)
 void
 bn256_add_cond (bn256 *A, const bn256 *B, uint32_t b)
 {
+  int i;
+  uint32_t v;
   uint32_t mask = 0UL - b;
   uint32_t *p = A->word;
   const uint32_t *q = B->word;
   uint32_t carry = 0;
-  int i;
-  uint32_t v;
 
+  asm volatile ("" : "+r" (mask) : : "memory");
   for (i = 0; i < BN256_WORDS; i++)
     {
       v = *q & mask;
@@ -484,13 +488,14 @@ bn256_add_cond (bn256 *A, const bn256 *B, uint32_t b)
 void
 bn256_sub_cond (bn256 *A, const bn256 *B, uint32_t b)
 {
+  int i;
+  uint32_t v;
   uint32_t mask = 0UL - b;
   uint32_t *p = A->word;
   const uint32_t *q = B->word;
   uint32_t borrow = 0;
-  int i;
-  uint32_t v;
 
+  asm volatile ("" : "+r" (mask) : : "memory");
   for (i = 0; i < BN256_WORDS; i++)
     {
       uint32_t borrow0 = (*p < borrow);

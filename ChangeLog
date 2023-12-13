@@ -1,3 +1,9 @@
+2023-12-13  NIIBE Yutaka  <gniibe@fsij.org>
+
+	* src/bn.c (bn256_swap_cond, bn256_set_cond, bn256_add_cond)
+	(bn256_sub_cond): Add asm volatile statement to prevent optimizing
+	out the intended const-time operation, from libgcrypt.
+
 2023-12-12  NIIBE Yutaka  <gniibe@fsij.org>
 
 	* src/ecc-x25519.c (mont_d_and_a): Use the variable name
