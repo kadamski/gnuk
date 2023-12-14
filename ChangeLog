@@ -1,3 +1,12 @@
+2023-12-14  NIIBE Yutaka  <gniibe@fsij.org>
+
+	* src/ecc-x25519.c (rr25519_0, rr25519_1, rr25519_copy)
+	(rr25519_swap_cond, rr25519_add, rr25519_sub, m32x32)
+	(rr25519_mul, rr25519_sqr, rr25638_mul_121665)
+	(get_uint32_le, get_uint24_le, rr25519_expand, rr25519_reduce)
+	(rr25519_contract): New.
+	(compute_nQ): Use the redundant representation for p25519 field.
+
 2023-12-13  NIIBE Yutaka  <gniibe@fsij.org>
 
 	* src/ecc-x25519.c (mod25638_0, mod25638_1, mod25638_copy)
