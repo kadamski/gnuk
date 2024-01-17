@@ -49,7 +49,6 @@
 #include <stdint.h>
 #include <string.h>
 #include "bn.h"
-#include "mod25638.h"
 
 /* Representation with signed 31-bit limb for bignum integer. */
 #define SR256_WORDS 9
@@ -416,10 +415,7 @@ mod256_inv (bn256 *r, const bn256 *x, int is_25519)
 
   bn_to_signed31 (s, r);
   if (is_25519)
-    {
-      mod25519_reduce (r);
-      modinv (s, &modulus_25519, modulus_inv31_25519, 19);
-    }
+    modinv (s, &modulus_25519, modulus_inv31_25519, 19);
   else
     modinv (s, &modulus_secp256k1, modulus_inv31_secp256k1, 20);
   bn_from_signed31 (r, s);
