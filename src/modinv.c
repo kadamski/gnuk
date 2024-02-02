@@ -228,6 +228,8 @@ modinv_update_fg (sr256 *f, sr256 *g, const matrix_2x2 *t)
 
 
 /*
+ * Normalize the number in the representation R of signed 32-bit limb
+ * with SIGN.
  */
 static void
 modinv_normalize (sr256 *r, int32_t sign, const sr256 *modulus)
@@ -245,23 +247,7 @@ modinv_normalize (sr256 *r, int32_t sign, const sr256 *modulus)
   r7 = r->v[7];
   r8 = r->v[8];
 
-  /* Add the modulus if the input is negative. */
-  mask_add = r8 >> 31;
-  r0 += modulus->v[0] & mask_add;
-  r1 += modulus->v[1] & mask_add;
-#if MODINV_LIMBS_CANBE_SKIPPED
-  /* We know it's zero.  */
-#else
-  r2 += modulus->v[2] & mask_add;
-  r3 += modulus->v[3] & mask_add;
-  r4 += modulus->v[4] & mask_add;
-  r5 += modulus->v[5] & mask_add;
-  r6 += modulus->v[6] & mask_add;
-  r7 += modulus->v[7] & mask_add;
-#endif
-  r8 += modulus->v[8] & mask_add;
-
-  /* negate if SIGN is negative.  */
+  /* Negate if SIGN is negative.  */
   mask_neg = sign >> 31;
   r0 = (r0 ^ mask_neg) - mask_neg;
   r1 = (r1 ^ mask_neg) - mask_neg;
@@ -281,15 +267,12 @@ modinv_normalize (sr256 *r, int32_t sign, const sr256 *modulus)
   r7 += r6 >> 31; r6 &= 0x7fffffff;
   r8 += r7 >> 31; r7 &= 0x7fffffff;
 
-  /* It brings r from range (-2*modulus,modulus) to range
-     (-modulus,modulus). */
-
-  /* Add the modulus again if the result is still negative. */
+  /* Add the modulus if the input is negative. */
   mask_add = r8 >> 31;
   r0 += modulus->v[0] & mask_add;
   r1 += modulus->v[1] & mask_add;
 #if MODINV_LIMBS_CANBE_SKIPPED
-  /* We know it's zero.  */
+  /* We know it's all zero.  */
 #else
   r2 += modulus->v[2] & mask_add;
   r3 += modulus->v[3] & mask_add;
@@ -308,7 +291,34 @@ modinv_normalize (sr256 *r, int32_t sign, const sr256 *modulus)
   r7 += r6 >> 31; r6 &= 0x7fffffff;
   r8 += r7 >> 31; r7 &= 0x7fffffff;
 
-  /* It brings r from range (-2*modulus,modulus) to range
+  /* It brings r*sign from range (-2*modulus,modulus) to range
+     (-modulus,modulus). */
+
+  /* Add the modulus again if the result is still negative. */
+  mask_add = r8 >> 31;
+  r0 += modulus->v[0] & mask_add;
+  r1 += modulus->v[1] & mask_add;
+#if MODINV_LIMBS_CANBE_SKIPPED
+  /* We know it's all zero.  */
+#else
+  r2 += modulus->v[2] & mask_add;
+  r3 += modulus->v[3] & mask_add;
+  r4 += modulus->v[4] & mask_add;
+  r5 += modulus->v[5] & mask_add;
+  r6 += modulus->v[6] & mask_add;
+  r7 += modulus->v[7] & mask_add;
+#endif
+  r8 += modulus->v[8] & mask_add;
+  r1 += r0 >> 31; r0 &= 0x7fffffff;
+  r2 += r1 >> 31; r1 &= 0x7fffffff;
+  r3 += r2 >> 31; r2 &= 0x7fffffff;
+  r4 += r3 >> 31; r3 &= 0x7fffffff;
+  r5 += r4 >> 31; r4 &= 0x7fffffff;
+  r6 += r5 >> 31; r5 &= 0x7fffffff;
+  r7 += r6 >> 31; r6 &= 0x7fffffff;
+  r8 += r7 >> 31; r7 &= 0x7fffffff;
+
+  /* It brings r*sign from range (-2*modulus,modulus) to range
      [0,modulus). */
 
   r->v[0] = r0;

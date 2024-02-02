@@ -1,3 +1,7 @@
+2024-02-02  NIIBE Yutaka  <gniibe@fsij.org>
+
+	* src/modinv.c (modinv_normalize): Fix the computation.
+
 2024-01-17  NIIBE Yutaka  <gniibe@fsij.org>
 
 	* src/modinv.c (mod256_inv): Fix not calling mod25519_reduce.
