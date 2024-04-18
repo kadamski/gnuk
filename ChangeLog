@@ -1,3 +1,9 @@
+2024-04-18  NIIBE Yutaka  <gniibe@fsij.org>
+
+	* src/keccak.c, src/keccak.h: Rename.  Also offer SHA-3.
+	* src/ecc-ed448.c (ed448_sign): Use keccak_context.
+	* src/openpgp-do.c (proc_key_import, gpg_do_keygen): Likewise.
+
 2024-02-02  NIIBE Yutaka  <gniibe@fsij.org>
 
 	* src/modinv.c (modinv_normalize): Fix the computation.

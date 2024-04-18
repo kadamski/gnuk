@@ -1,7 +1,7 @@
 /*
- * shake256.c -- Compute SHAKE hash.
+ * keccak.c -- Compute Keccak hash.
  *
- * Copyright (C) 2021 Free Software Initiative of Japan
+ * Copyright (C) 2021, 2024  Free Software Initiative of Japan
  * Author: NIIBE Yutaka <gniibe@fsij.org>
  *
  * This file is a part of Gnuk, a GnuPG USB Token implementation.
@@ -17,7 +17,7 @@
  * License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
 
@@ -29,8 +29,25 @@
  *                   August 2015.
  */
 
-#define SHAKE_BITS 256
-#define SHAKE_INDEX_MAX (200 - (SHAKE_BITS >> 2))
+#define INDEX_MAX(cap) (200 - (cap >> 3))
+
+#define SHAKE256_CAPACITY 512
+#define SHAKE256_INDEX_MAX INDEX_MAX (SHAKE256_CAPACITY)
+
+#define SHAKE128_CAPACITY 256
+#define SHAKE128_INDEX_MAX INDEX_MAX (SHAKE128_CAPACITY)
+
+#define SHA3_512_CAPACITY 1024
+#define SHA3_512_INDEX_MAX INDEX_MAX (SHA3_512_CAPACITY)
+
+/*
+ * SHAKE is defined appending 11 at the end to RawSHAKE,
+ * RawSHAKE is defined adding 11 at the end to KECCAK,
+ * and KECCACK uses pad10*1 at the end.
+ * This means adding 111110*1 at the end.
+ */
+#define SHAKE_SUFFIX 0x1F
+#define SHA3_SUFFIX  0x06
 
 /*
  * b=1600
@@ -43,7 +60,8 @@
 
 #include <stdint.h>
 #include <string.h>
-#include "shake256.h"
+#include <stdarg.h>
+#include "keccak.h"
 
 /* Round constants in iota step.  */
 static const uint64_t rc[24] = {
@@ -144,59 +162,128 @@ keccak_f1600 (uint64_t s[25])
     }
 }
 
-void
-shake256_start (struct shake_context *shake)
-{
-  memset (shake, 0, sizeof (shake_context));
-}
-
-void
-shake256_update (struct shake_context *shake,
-		 const unsigned char *src, unsigned int size)
+static void
+keccak_update (struct keccak_context *keccak,
+               const unsigned char *src, unsigned int size)
 {
   if (size == 0)
     return;
 
   while (1)
     {
-      absorb (shake->state, shake->index, *src++);
-      if (++shake->index == SHAKE_INDEX_MAX)
+      absorb (keccak->state, keccak->index, *src++);
+      if (++keccak->index == keccak->index_max)
 	{
-	  keccak_f1600 (shake->state);
-	  shake->index = 0;
+	  keccak_f1600 (keccak->state);
+	  keccak->index = 0;
 	}
       if (--size == 0)
 	break;
     }
 }
 
-void
-shake256_finish (struct shake_context *shake,
-		 unsigned char *dst, unsigned int size)
+static void
+keccak_finish (struct keccak_context *keccak,
+               unsigned char *dst, unsigned int size, uint8_t suffix)
 {
   if (size == 0)
     return;
 
-  /*
-   * SHAKE is defined appending 11 at the end to RawSHAKE,
-   * RawSHAKE is defined adding 11 at the end to KECCAK,
-   * and KECCACK uses pad10*1 at the end.
-   * This means adding 111110*1 at the end.
-   */
-  absorb (shake->state, shake->index, 0x1F);
-  absorb (shake->state, SHAKE_INDEX_MAX - 1, 0x80);
-  keccak_f1600 (shake->state);
-  shake->index = 0;
+  absorb (keccak->state, keccak->index, suffix);
+  absorb (keccak->state, keccak->index_max - 1, 0x80);
+  keccak_f1600 (keccak->state);
+  keccak->index = 0;
 
   while (1)
     {
-      *dst++ = squeeze (shake->state, shake->index);
+      *dst++ = squeeze (keccak->state, keccak->index);
       if (--size == 0)
 	break;
-      if (++shake->index == SHAKE_INDEX_MAX)
+      if (++keccak->index == keccak->index_max)
 	{
-	  keccak_f1600 (shake->state);
-	  shake->index = 0;
+	  keccak_f1600 (keccak->state);
+	  keccak->index = 0;
 	}
     }
+}
+
+void
+shake128_start (struct keccak_context *shake)
+{
+  memset (shake, 0, sizeof (keccak_context));
+  shake->index_max = SHAKE128_INDEX_MAX;
+}
+
+void
+shake256_start (struct keccak_context *shake)
+{
+  memset (shake, 0, sizeof (keccak_context));
+  shake->index_max = SHAKE256_INDEX_MAX;
+}
+
+void
+shake128_update (struct keccak_context *shake,
+                 const unsigned char *src, unsigned int size)
+{
+  keccak_update (shake, src, size);
+}
+
+void
+shake256_update (struct keccak_context *shake,
+                 const unsigned char *src, unsigned int size)
+{
+  keccak_update (shake, src, size);
+}
+
+void
+shake128_finish (struct keccak_context *shake,
+                 unsigned char *dst, unsigned int size)
+{
+  keccak_finish (shake, dst, size, SHAKE_SUFFIX);
+}
+
+void
+shake256_finish (struct keccak_context *shake,
+                 unsigned char *dst, unsigned int size)
+{
+  keccak_finish (shake, dst, size, SHAKE_SUFFIX);
+}
+
+void
+shake256v (uint8_t *out, size_t outlen, ...)
+{
+  struct keccak_context ctx;
+  va_list ap;
+  void *p;
+  size_t len;
+
+  shake256_start (&ctx);
+
+  va_start (ap, outlen);
+  while (1)
+    {
+      p = va_arg (ap, void *);
+      len = va_arg (ap, size_t);
+      if (!p)
+        break;
+
+      shake256_update (&ctx, p, len);
+    }
+  va_end (ap);
+
+  shake256_finish (&ctx, out, outlen);
+}
+
+void
+sha3_512 (uint8_t h[64], const uint8_t *in, size_t inlen)
+
+{
+  struct keccak_context ctx;
+
+  memset (&ctx, 0, sizeof (keccak_context));
+  ctx.index_max = SHA3_512_INDEX_MAX;
+
+  keccak_update (&ctx, in, inlen);
+
+  keccak_finish (&ctx, h, 64, SHA3_SUFFIX);
 }

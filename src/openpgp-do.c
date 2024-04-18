@@ -2,7 +2,7 @@
  * openpgp-do.c -- OpenPGP card Data Objects (DO) handling
  *
  * Copyright (C) 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018,
- *               2020, 2021, 2022
+ *               2020, 2021, 2022, 2024
  *               Free Software Initiative of Japan
  * Author: NIIBE Yutaka <gniibe@fsij.org>
  *
@@ -34,7 +34,7 @@
 #include "random.h"
 #include "aes.h"
 #include "sha512.h"
-#include "shake256.h"
+#include "keccak.h"
 
 /* Forward declaration */
 #define CLEAN_PAGE_FULL 1
@@ -1567,7 +1567,7 @@ proc_key_import (const uint8_t *data, int len)
     }
   else if (attr == ALGO_ED448)
     {
-      shake_context ctx;
+      keccak_context ctx;
       uint8_t hash[128];
 
       if (len - 12 != 57)
@@ -2348,7 +2348,7 @@ gpg_do_keygen (uint8_t *buf)
     }
   else if (attr == ALGO_ED448)
     {
-      shake_context ctx;
+      keccak_context ctx;
       rnd = random_bytes_get ();
       shake256_start (&ctx);
       shake256_update (&ctx, rnd, 32);

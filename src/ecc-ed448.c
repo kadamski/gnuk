@@ -3,7 +3,7 @@
  *               the twisted Edwards curve: -x^2 + y^2 = 1 + d*x^2*y^2
  *               d = -39081
  *
- * Copyright (C) 2021  Free Software Initiative of Japan
+ * Copyright (C) 2021, 2024  Free Software Initiative of Japan
  * Author: NIIBE Yutaka <gniibe@fsij.org>
  *
  * This file is a part of Gnuk, a GnuPG USB Token implementation.
@@ -41,7 +41,7 @@
 #include <string.h>
 
 #include "p448.h"
-#include "shake256.h"
+#include "keccak.h"
 
 
 #define C_WORDS      7
@@ -761,7 +761,7 @@ ed448_sign (uint8_t *out, const uint8_t *input, unsigned int ilen,
 	    const uint8_t *a_in, const uint8_t *seed, const uint8_t *pk)
 {
   bn448 a[1], k[1], s[1];
-  shake_context ctx;
+  keccak_context ctx;
   const unsigned char x_olen[2] = { 0, 0 };
   uint32_t hash[BN912_WORDS];
   uint8_t r[57];

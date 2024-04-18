@@ -13,7 +13,7 @@ CSRC = main.c \
 	modp256k1.c jpc_p256k1.c ec_p256k1.c call-ec_p256k1.c \
 	mod25638.c ecc-ed25519.c ecc-x25519.c sha512.c \
 	p448.c ecc-x448.c \
-	ecc-ed448.c shake256.c \
+	ecc-ed448.c keccak.c \
 	random.c neug.c sha256.c
 
 INCDIR =
