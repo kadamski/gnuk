@@ -3,11 +3,16 @@ Gnuk NEWS - User visible changes
 
 * Major changes in Gnuk 2.2
 
-  Released 202?-??-??, by NIIBE Yutaka
+  Released 2024-04-20, by NIIBE Yutaka
 
 ** Modular inverse by safegcd256 for Ed25519 and X25519 computation
 
-Ed25519 and X25519 computation are now faster with safegcd256.
+Ed25519 and X25519 computation are now a bit faster with safegcd256.
+
+** X25519 with 2^25.5 limb
+
+X25519 computation is done with 2^25.5 limb.  It may be better on
+other MCUs.
 
 
 * Major changes in Gnuk 2.1

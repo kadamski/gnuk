@@ -1,3 +1,7 @@
+2024-04-20  NIIBE Yutaka  <gniibe@fsij.org>
+
+	* VERSION: Version 2.2.
+
 2024-04-18  NIIBE Yutaka  <gniibe@fsij.org>
 
 	* src/keccak.c, src/keccak.h: Rename.  Also offer SHA-3.
