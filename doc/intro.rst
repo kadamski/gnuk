@@ -5,35 +5,35 @@ Introduction
 What's Gnuk?
 ------------
 
-Gnuk is an implementation of USB cryptographic token for GNU Privacy
-Guard.  Gnuk supports OpenPGP card protocol version 2, and it runs on
-STM32F103 processor.
+Gnuk is an implementation of an USB cryptographic token for GNU Privacy
+Guard.  It supports the OpenPGP card protocol version 2, and runs on
+the STM32F103 processor.
 
-This document explains about Gnuk 1.2, which comes with ECC algorithm.
+This document explains Gnuk 1.2, which comes with the ECC algorithm.
 
 
 Cryptographic token and feature of Gnuk
 ---------------------------------------
 
-Cryptographic token is a store of private keys and it computes cryptographic
+A cryptographic token is a store of private keys and it computes cryptographic
 functions on the device.
 
-The idea is to separate important secrets to independent device, 
+The idea is to separate important secrets to an independent device, 
 from where nobody can extract them.
 
 
 Development Environment
 -----------------------
 
-See :doc:`development` for development environment for Gnuk.
-Gnuk is developed on the environment where there are only Free Software.
+See :doc:`development` for the development environment for Gnuk.
+Gnuk is developed on an environment where there is only Free Software.
 
 
 Target boards for running Gnuk
 ------------------------------
 
 Hardware requirement for Gnuk is the micro controller STM32F103.
-In version 1.2, Gnuk supports following boards.
+In version 1.2, Gnuk supports the following boards:
 
 * FST-01 (Flying Stone Tiny ZERO-ONE)
 
