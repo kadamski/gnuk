@@ -191,7 +191,7 @@ struct ccid {
   uint32_t state      : 4;
   uint32_t err        : 1;
   uint32_t tx_busy    : 1;
-  uint32_t timeout_cnt: 3;
+  uint32_t timeout_cnt: 4;
 
   uint8_t *p;
   size_t len;
@@ -1929,7 +1929,7 @@ ccid_thread (void *arg)
 	}
       else			/* Timeout */
 	{
-	  if (c->timeout_cnt == 7
+	  if (c->timeout_cnt == 15
 	      && c->ccid_state == CCID_STATE_ACK_REQUIRED_1)
 	    {
 	      ackbtn_active = 0;
