@@ -42,7 +42,7 @@
 static void gpg_do_delete_prvkey (enum kind_of_key kk, int clean_page_full);
 static void gpg_reset_digital_signature_counter (void);
 
-#define PASSWORD_ERRORS_MAX 3	/* >= errors, it will be locked */
+#define PASSWORD_ERRORS_MAX 5	/* >= errors, it will be locked */
 static const uint8_t *pw_err_counter_p[3];
 
 static int
