@@ -855,7 +855,7 @@ static uint8_t uif_flags;	/* Six bits of flags */
 int
 gpg_do_get_uif (enum kind_of_key kk)
 {
-  return ((uif_flags >> (kk * 2)) & 3) != 0;
+  return ((uif_flags >> (kk * 2)) & 3) == 0;
 }
 
 static int
